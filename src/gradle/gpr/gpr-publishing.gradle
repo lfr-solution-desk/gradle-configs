@@ -1,0 +1,138 @@
+// The minimal configuration to get all the Gradle modules publishes in GitHub Packages repository
+// (as Maven artifacts), defaulting to using Solution Desk GitHub organization as the target of the packages.
+// The to be applied from Liferay Workspace -> build.gradle
+
+// The location on GitHub where the project's artifacts are published;
+// assume all Solution Desk projects live in 'lfr-solution-desk' (owner) and
+// the repo named exactly as the same of the root project in Gradle (see settings.gradle of the project)
+
+String gitHubRepoOwner = project.findProperty('gpr.publishing.repo.owner') ?: 'lfr-solution-desk'
+String gitHubRepoName = project.findProperty('gpr.publishing.repo.name') ?: rootProject.name
+
+// If set to true, version of all published modules (a taken from Gradle, not in bnd.bnd!) are updated to be *-SNAPSHOT:
+//  - if version ends with -SNAPSHOT => keep as is
+//  - if version is anything else => append -SNAPSHOT
+// This helps with publishing when versions may not be raised all the time, but we want people
+// to get the possibility to fetch updated artifacts.
+
+boolean forceSnapshotVersions =
+        Boolean.parseBoolean(project.findProperty('gpr.publishing.force.snapshot.versions') ?: 'false')
+
+// The template to be used when determining Maven "group ID" of a single module. Following variables are supported:
+//  * ${rootProjectName} ~ rootProject.name
+//      * f-liferay-forms-framework (group ID) + form-api (artifact ID)
+//  * ${projectGroup} ~ project.group
+//      * path in the Gradle project from root, including the root
+//      * f-liferay-forms-framework.modules.form (group ID) + form-api (artifact ID)
+
+String groupIdTemplate = project.findProperty('gpr.publishing.groupId.template') ?: 'com.liferay.soldesk.${rootProjectName}'
+
+def resolveGroupIdTemplate = { Project project ->
+    def binding = [
+            rootProjectName : project.rootProject.name,
+            projectGroup  : project.group
+    ]
+    return new groovy.text.SimpleTemplateEngine().createTemplate(groupIdTemplate).make(binding).toString()
+}
+
+gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
+    // Make the GPR auth properties mandatory, since credentials for GPR will always be required for publishing
+    if(tg.allTasks.find { it.name == 'publishGprPublicationToGitHubPackagesRepository' }) {
+        if(!findProperty('gpr.publishing.actor') || !findProperty('gpr.publishing.token')) {
+            throw new InvalidUserDataException(
+                    "The project properties with auth for GitHub Packages Publishing ('gpr.publishing.actor' and 'gpr.publishing.token') " +
+                            "are required when publishing, but were not provided.")
+        }
+    }
+}
+
+logger.info "[gpr] gitHubRepoOwner= ${gitHubRepoOwner} | gitHubRepoName= ${gitHubRepoName} | " +
+            "groupIdTemplate= ${groupIdTemplate} | forceSnapshotVersions: ${forceSnapshotVersions}"
+
+subprojects {
+    // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages
+    // https://docs.gradle.org/5.6.4/userguide/publishing_maven.html#sec:publishing_custom_artifacts_to_maven
+
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/${gitHubRepoOwner}/${gitHubRepoName}")
+                credentials {
+                    username = project.findProperty("gpr.publishing.actor")
+                    password = project.findProperty("gpr.publishing.token")
+                }
+            }
+        }
+    }
+
+    plugins.withType(JavaPlugin) {
+        logger.info "[gpr] Java module detected for publishing: ${project} (${project.version})"
+
+        task sourcesJar(type: Jar) {
+            from sourceSets.main.allJava
+            archiveClassifier = 'sources'
+        }
+
+        task javadocJar(type: Jar) {
+            from javadoc
+            archiveClassifier = 'javadoc'
+        }
+
+        publishing {
+            publications {
+                gpr(MavenPublication) {
+                    groupId = resolveGroupIdTemplate(project)
+
+                    from components.java
+                    artifact sourcesJar
+
+                    // TODO cannot generate javadoc, there are 100s of errors in the source files
+//                    artifact javadocJar
+
+                    pom {
+
+                        description = project.description ?: "Artifact from '${project.path}' of '${gitHubRepoOwner}/${gitHubRepoName}'."
+
+                        scm {
+                            connection = "scm:git:https://github.com/${gitHubRepoOwner}/${gitHubRepoName}.git"
+                            developerConnection = "scm:git:https://github.com/${gitHubRepoOwner}/${gitHubRepoName}.git"
+                            url = "https://github.com/${gitHubRepoOwner}/${gitHubRepoName}"
+                        }
+
+                        // TODO anything else to customize?
+                    }
+                }
+            }
+        }
+
+        if(forceSnapshotVersions) {
+            project.afterEvaluate {
+                logger.info "[gpr] Forcing SNAPSHOT version to be published for ${project}"
+
+                if (!project.version.endsWith('-SNAPSHOT')) {
+                    publishing {
+                        publications.getByName('gpr') { publication ->
+                            pom {
+                                version = "${publication.version}-SNAPSHOT"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // TODO add support for "themes" modules
+    // TODO add support for "wars" modules
+
+    // https://docs.gradle.org/5.6.4/userguide/signing_plugin.html#signing_plugin
+    // TODO turn off for now, since signing would require a signing key to be present
+
+//    signing {
+//        sign publishing.publications.gpr
+//    }
+}

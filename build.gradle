@@ -1,0 +1,42 @@
+plugins {
+    id 'org.ysb33r.gradletest' version '2.0'
+}
+
+description = 'Various Gradle configs to be used by Solution Desk Gradle builds'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        groovy {
+            srcDirs = [ 'src/gradle' ]
+        }
+    }
+}
+
+gradleTest.configure {
+    // make sure all generated resources are re-built
+    dependsOn 'clean'
+
+    versions gradle.gradleVersion
+    versions '5.6.4'    // default in the latest Liferay Workspace template
+
+    // TODO the Liferay Workspace plugin (2.2.6) is not ready yet
+//    versions '6.3'      // testing forward
+
+
+    gradleArguments "--info"
+
+    // pointers to the tested script plugin file
+    gradleArguments "--project-prop", "tested.gradle.scripts.local.src.dir=${project.file(sourceSets.main.groovy.srcDirs.first()).absolutePath}"
+
+    gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${sourceSets.main.groovy.srcDirs.first()}"
+
+    beforeTest {
+        println "  Running gradleTest: ${it.name}"
+    }
+}
+

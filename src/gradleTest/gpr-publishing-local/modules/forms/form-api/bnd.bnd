@@ -1,0 +1,3 @@
+Bundle-Name: Liferay GS Solution Desk Form Api
+Bundle-SymbolicName: com.liferay.gs.form.api
+Export-Package: com.liferay.gs.form.service

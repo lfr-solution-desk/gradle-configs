@@ -1,0 +1,51 @@
+// Applying this script in your root Gradle build file for Liferay Workspace will allow you
+// to use the artifacts published from 'lfr-solution-desk' repositories as dependencies
+
+// The location on GitHub where the projects' sources reside and are published;
+// assume all Solution Desk projects live in 'lfr-solution-desk' (owner) and
+// the repo named exactly as the same of the root project in Gradle (see settings.gradle)
+def gitHubReposOwner = project.findProperty('gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
+def gitHubReposNames = project.findProperty('gpr.consuming.repos.names') ?: ''
+
+// Approach 1 - inspect dependencies, declare repositories based on them
+// pros - only the ones are declared
+// cons -- cannot handle transitive dependencies, so if an artifacts declared dependency on another from different (soldesk) repo, we will never be able to add a repo for it
+subprojects {
+    afterEvaluate { Project evaluatedProject ->
+        // TODO read all dependencies, find these with Maven "group" like "com.liferay.soldesk.NNN.ZZZ",
+        //  return the NNN part ~ name of the GPR repo where the artifact was published
+        println configurations
+
+        def usedGprRepos = configurations.collect { allDependencies }.flatten().findAll { Dependency d ->
+            d.group.startsWith('com.liferay.soldesk.')
+        }.collect { Dependency d ->
+            d.group.replace('com.liferay.soldesk.', '')
+        }
+
+        println usedGprRepos
+
+        usedGprRepos.each { usedGprRepoName ->
+            repositories {
+                maven {
+                    name = "GitHubPackages - ${usedGprRepoName}"
+                    url = uri("https://maven.pkg.github.com/${gitHubReposOwner}/${usedGprRepoName}")
+                    credentials {
+                        // allow empty credentials, since all artifacts may already be cached locally
+                        username = project.findProperty("gpr.consuming.actor")
+                        password = project.findProperty("gpr.consuming.token")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Approach 2 -- list all repos in 'lfr-solution-desk' (using GitHub HTTP api) and add them all
+// pros -- no need to inspect dependencies
+// cons -- requires credentials all the time (to call the GitHub api), might include unnecessary repos
+// TODO
+
+// Approach 3 -- same as 2, but keep the list of all repos (including private) somewhere publicly and add them all
+// pros -- no need to inspect dependencies, no need for credentials to declare the repos
+// cons -- requires the list to be up-to-date (but simple workflow reacting to webhooks from the org could do the trick)
+// TODO
