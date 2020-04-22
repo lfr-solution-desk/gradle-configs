@@ -4,8 +4,8 @@
 // The location on GitHub where the projects' sources reside and are published;
 // assume all Solution Desk projects live in 'lfr-solution-desk' (owner) and
 // the repo named exactly as the same of the root project in Gradle (see settings.gradle)
-def gitHubReposOwner = project.findProperty('gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
-def gitHubReposNames = project.findProperty('gpr.consuming.repos.names') ?: ''
+def gitHubReposOwner = project.findProperty('liferay.gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
+def gitHubReposNames = project.findProperty('liferay.gpr.consuming.repos.names') ?: ''
 
 // Approach 1 - inspect dependencies, declare repositories based on them
 // pros - only the ones are declared
@@ -31,8 +31,8 @@ subprojects {
                     url = uri("https://maven.pkg.github.com/${gitHubReposOwner}/${usedGprRepoName}")
                     credentials {
                         // allow empty credentials, since all artifacts may already be cached locally
-                        username = project.findProperty("gpr.consuming.actor")
-                        password = project.findProperty("gpr.consuming.token")
+                        username = project.findProperty("liferay.gpr.consuming.actor")
+                        password = project.findProperty("liferay.gpr.consuming.token")
                     }
                 }
             }
