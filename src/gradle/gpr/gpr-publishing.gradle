@@ -105,10 +105,15 @@ subprojects {
                     artifactId = resolveArtifactIdTemplate(project)
 
                     from components.java
-                    artifact sourcesJar
 
-                    // TODO cannot generate javadoc, there are 100s of errors in the source files
-//                    artifact javadocJar
+                    // workaround, where -source is not supported when updating snapshots
+                    // see: https://github.community/t5/GitHub-API-Development-and/Github-Package-snapshot-build-number-not-updating/m-p/55177/highlight/true#M4672
+                    if(publicationType == 'RELEASE') {
+                        artifact sourcesJar
+
+                        // TODO cannot generate javadoc, there are 100s of errors in the source files
+                        //                    artifact javadocJar
+                    }
 
                     pom {
                         description = project.description ?: "Artifact from '${project.path}' of '${githubRepoOwner}/${githubRepoName}'."
