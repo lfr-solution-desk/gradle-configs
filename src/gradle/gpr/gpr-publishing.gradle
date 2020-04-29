@@ -24,22 +24,32 @@ String githubRepoName = project.findProperty('liferay.gpr.publishing.repo.name')
 String publicationType = project.findProperty('liferay.gpr.publishing.type') ?: 'RELEASE'
 assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE or SNAPSHOT for 'liferay.gpr.publishing.type'."
 
-// The template to be used when determining Maven "group ID" of a single module. Following variables are supported:
+// The templates to be used when determining Maven "group ID" and "artifact ID" of a single module and
+// creating pom.xml for a module. Following variables are supported:
 //  * ${rootProjectName} ~ rootProject.name
-//      * f-liferay-forms-framework (group ID) + form-api (artifact ID)
+//      * f-liferay-forms-framework
 //  * ${projectGroup} ~ project.group
-//      * path in the Gradle project from root, including the root
-//      * f-liferay-forms-framework.modules.form (group ID) + form-api (artifact ID)
+//      * path in the Gradle project from root, including the root project's name
+//      * f-liferay-forms-framework.modules.form
+//  * ${projectName} ~ project.name
+//      * the name of the module as a Gradle project
+//      * form-api
 
 String groupIdTemplate = project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
+String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: '${projectName}'
+//String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
 
-def resolveGroupIdTemplate = { Project project ->
+def resolveTemplate = { String template, Project moduleProject ->
     def binding = [
-            rootProjectName : project.rootProject.name,
-            projectGroup  : project.group
+            rootProjectName: moduleProject.rootProject.name,
+            projectGroup   : moduleProject.group,
+            projectName    : moduleProject.name
     ]
-    return new groovy.text.SimpleTemplateEngine().createTemplate(groupIdTemplate).make(binding).toString()
+    return new groovy.text.SimpleTemplateEngine().createTemplate(template).make(binding).toString()
 }
+
+def resolveGroupIdTemplate = resolveTemplate.curry(groupIdTemplate)
+def resolveArtifactIdTemplate = resolveTemplate.curry(artifactIdTemplate)
 
 gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     // Make the GPR auth properties mandatory, since credentials for GPR will always be required when publishing
@@ -92,6 +102,7 @@ subprojects {
             publications {
                 gpr(MavenPublication) {
                     groupId = resolveGroupIdTemplate(project)
+                    artifactId = resolveArtifactIdTemplate(project)
 
                     from components.java
                     artifact sourcesJar
