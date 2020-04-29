@@ -1,0 +1,9 @@
+dependencies {
+	compileOnly group: "com.liferay", name: "com.liferay.dynamic.data.mapping.api"
+	compileOnly group: "com.liferay", name: "com.liferay.osgi.util"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel"
+	compileOnly group: "org.osgi", name: "org.osgi.core"
+
+    // for test of the SNAPSHOT checks
+    compileOnly group: "com.example", name: "artifact", version: "1.0.0-SNAPSHOT"
+}

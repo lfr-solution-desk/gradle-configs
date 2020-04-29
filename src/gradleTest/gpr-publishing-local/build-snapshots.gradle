@@ -2,7 +2,7 @@ project.ext['liferay.gpr.publishing.actor'] = 'publishing_user'
 project.ext['liferay.gpr.publishing.token'] = 'sdfhwer2242h2434'
 
 // invoke this test with some special arguments for the build
-project.ext['liferay.gpr.publishing.force.snapshot.versions' ] = 'true'
+project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"

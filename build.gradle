@@ -35,6 +35,8 @@ gradleTest.configure {
 
     gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${sourceSets.main.groovy.srcDirs.first()}"
 
+    expectFailure ~/gpr-publishing-local_release-checks/
+
     beforeTest {
         println "  Running gradleTest: ${it.name}"
     }

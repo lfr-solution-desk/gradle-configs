@@ -11,15 +11,18 @@
 String githubRepoOwner = project.findProperty('liferay.gpr.publishing.repo.owner') ?: 'lfr-solution-desk'
 String githubRepoName = project.findProperty('liferay.gpr.publishing.repo.name') ?: rootProject.name
 
-// If set to true, version of all published modules (as taken from Gradle, not from bnd.bnd!) are updated
+// If set to 'SNAPSHOT', the published version of all modules (as taken from Gradle, not from bnd.bnd!) are updated
 // to be *-SNAPSHOT:
 //  - if version ends with -SNAPSHOT => keep as is
 //  - if version is anything else => append -SNAPSHOT
 // This helps with publishing without a release, when versions may not be raised all the time, but we want
 // people to get the possibility to fetch updated artifacts.
+// If set to 'RELEASE':
+//  - all dependencies are forced to be "final" (non-SNAPSHOT) (build is failed if not satisfied)
+//  - all versions are forced to be non-SNAPSHOT (the suffix is removed, if found)
 
-boolean forceSnapshotVersions =
-        Boolean.parseBoolean(project.findProperty('liferay.gpr.publishing.force.snapshot.versions') ?: 'false')
+String publicationType = project.findProperty('liferay.gpr.publishing.type') ?: 'RELEASE'
+assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE or SNAPSHOT for 'liferay.gpr.publishing.type'."
 
 // The template to be used when determining Maven "group ID" of a single module. Following variables are supported:
 //  * ${rootProjectName} ~ rootProject.name
@@ -50,7 +53,7 @@ gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
 }
 
 logger.info "[gpr] githubRepoOwner= ${githubRepoOwner} | githubRepoName= ${githubRepoName} | " +
-            "groupIdTemplate= ${groupIdTemplate} | forceSnapshotVersions: ${forceSnapshotVersions}"
+            "groupIdTemplate= ${groupIdTemplate} | publicationType: ${publicationType}"
 
 subprojects {
     // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages
@@ -111,7 +114,8 @@ subprojects {
             }
         }
 
-        if(forceSnapshotVersions) {
+        if(publicationType == 'SNAPSHOT') {
+            // override the version used in pom.xml being published
             project.afterEvaluate {
                 logger.info "[gpr] Forcing SNAPSHOT version to be published for ${project}"
 
@@ -125,11 +129,41 @@ subprojects {
                     }
                 }
             }
+        } else if(publicationType == 'RELEASE') {
+            tasks.findByName('publishGprPublicationToGitHubPackagesRepository').configure {
+                dependsOn 'checkNoSnapshotDependenciesUsed'
+                dependsOn 'checkFinalVersionUsed'
+            }
         }
     }
 
     // TODO add support for "themes" modules
     // TODO add support for "wars" modules
+
+    tasks.register('checkNoSnapshotDependenciesUsed') {
+        doLast {
+            def dependenciesWithSnapshotVersionByConfiguration =
+                    configurations.collectEntries() { Configuration c ->
+                        [ c, c.allDependencies.findAll { Dependency  d -> (d.version ?: '').endsWith('-SNAPSHOT') } ]
+                    }.findAll {
+                        Configuration c, Set<Dependency> directDependenciesHavingSnapshotVersion ->
+                            !directDependenciesHavingSnapshotVersion.isEmpty()
+                    }
+
+            if (!dependenciesWithSnapshotVersionByConfiguration.isEmpty()) {
+                throw new PublishException(
+                        "The module ${project} uses one or more -SNAPSHOT dependencies: ${dependenciesWithSnapshotVersionByConfiguration}")
+            }
+        }
+    }
+
+    tasks.register('checkFinalVersionUsed') {
+        doLast {
+            if (project.version.toString().endsWith('-SNAPSHOT')) {
+                throw new PublishException("The version of ${project} is not final, please make sure there is no '-SNAPSHOT' suffix in the version.")
+            }
+        }
+    }
 
     // https://docs.gradle.org/5.6.4/userguide/signing_plugin.html#signing_plugin
     // TODO turn off for now, since signing would require a signing key to be present
