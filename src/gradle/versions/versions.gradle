@@ -1,0 +1,16 @@
+// Inspired by:
+//      https://bmuschko.com/blog/gradle-release-strategy/
+//      https://github.com/nemerosa/versioning
+
+assert rootProject.version && rootProject.version != Project.DEFAULT_VERSION,
+        "To use 'versions.gradle', please provide a valid version of your root project, " +
+                "either using gradle.properties or in build.gradle before this script plugin is applied."
+
+subprojects {
+    afterEvaluate {
+        // We'll release all modules together (see gpr-publishing.gradle), so default to using
+        // the same version (from root project) with every module of the Liferay Workspace
+
+        version = rootProject.version
+    }
+}

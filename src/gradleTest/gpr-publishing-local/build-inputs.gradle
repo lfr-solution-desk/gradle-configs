@@ -1,5 +1,9 @@
-project.ext['liferay.gpr.publishing.actor'] = 'publishing_user'
-project.ext['liferay.gpr.publishing.token'] = 'sdfhwer2242h2434'
+// customize all supported inputs
+project.ext['liferay.gpr.publishing.repo.owner' ] = 'owner-AAA'
+project.ext['liferay.gpr.publishing.repo.name' ] = 'repo-BBB'
+project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.example.nnn.xxx'
+
+// also set custom group name
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
@@ -13,33 +17,33 @@ task runGradleTest {
 
         // all defaults, no version set anywhere
         project.file('modules/forms/form-api/build/publications/gpr/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
+            assert it.contains('<groupId>com.example.nnn.xxx</groupId>')
             assert it.contains('<artifactId>form-api</artifactId>')
             assert it.contains('<version>unspecified</version>')
 
-            assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
+            assert it.contains('owner-AAA/repo-BBB')
         }
 
         // version set in bnd.bnd only
         assert project.file('modules/forms/form-api-2/build/publications/gpr/pom-default.xml').isFile()
 
         project.file('modules/forms/form-api-2/build/publications/gpr/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
+            assert it.contains('<groupId>com.example.nnn.xxx</groupId>')
             assert it.contains('<artifactId>form-api-2</artifactId>')
             assert it.contains('<version>1.0.2</version>')
 
-            assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
+            assert it.contains('owner-AAA/repo-BBB')
         }
 
         // version set in bnd.bnd AND build.gradle
         assert project.file('modules/forms/form-api-3/build/publications/gpr/pom-default.xml').isFile()
 
         project.file('modules/forms/form-api-3/build/publications/gpr/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
+            assert it.contains('<groupId>com.example.nnn.xxx</groupId>')
             assert it.contains('<artifactId>form-api-3</artifactId>')
             assert it.contains('<version>2.1.2</version>')
 
-            assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
+            assert it.contains('owner-AAA/repo-BBB')
         }
 
         // version set in bnd.bnd + build.gradle + changed via build.gradle -> pom {}
@@ -51,15 +55,17 @@ task runGradleTest {
             assert it.contains('<version>3.3.3</version>')
             assert it.contains('<description>AAAAA</description>')
 
-            assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
+            assert it.contains('owner-AAA/repo-BBB')
         }
 
         // check the target Maven repo was set up as expected
         project(':modules:forms:form-api').with {
             publishing.repositories.getByName('GitHubPackages').with { ArtifactRepository ar ->
-                assert ar.url.toString() == 'https://maven.pkg.github.com/lfr-solution-desk/f-gpr-publishing-repo'
-                assert ar.credentials.username == 'publishing_user'
-                assert ar.credentials.password == 'sdfhwer2242h2434'
+                assert ar.url.toString() == 'https://maven.pkg.github.com/owner-AAA/repo-BBB'
+
+                // allow no-auth, when not publishing
+                assert !ar.credentials.username
+                assert !ar.credentials.password
             }
         }
     }
@@ -68,7 +74,6 @@ task runGradleTest {
 subprojects {
     afterEvaluate {
         // The publishing tasks are only added once the individual modules are configured, based on their types
-
         def taskToTest = tasks.findByName('generatePomFileForGprPublication')
         if (taskToTest) {
             runGradleTest.dependsOn taskToTest

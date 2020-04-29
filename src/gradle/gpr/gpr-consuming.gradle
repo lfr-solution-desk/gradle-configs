@@ -4,35 +4,81 @@
 // The location on GitHub where the projects' sources reside and are published;
 // assume all Solution Desk projects live in 'lfr-solution-desk' (owner) and
 // the repo named exactly as the same of the root project in Gradle (see settings.gradle)
-def gitHubReposOwner = project.findProperty('liferay.gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
-def gitHubReposNames = project.findProperty('liferay.gpr.consuming.repos.names') ?: ''
+// from where published
+String githubReposOwner =
+        project.findProperty('liferay.gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
+boolean inferringEnabled =
+        Boolean.parseBoolean((project.findProperty('liferay.gpr.consuming.repos.inferring.enabled') ?: 'true'))
+
+String inferringDependencyGroupIdPrefix =
+        project.findProperty('liferay.gpr.consuming.repos.inferring.dependency.groupid.prefix') ?: 'com.liferay.soldesk.'
+
+assert inferringDependencyGroupIdPrefix.endsWith('.'), "Please make sure that 'liferay.gpr.consuming.repos.inferring.dependency.groupid.prefix' ends with a period ('.')."
+
+List<String> staticGithubReposNames =
+        (project.findProperty('liferay.gpr.consuming.repos.names') ?: '').toString().split(/,\s*/).findAll{ it }
 
 // Approach 1 - inspect dependencies, declare repositories based on them
 // pros - only the ones are declared
-// cons -- cannot handle transitive dependencies, so if an artifacts declared dependency on another from different (soldesk) repo, we will never be able to add a repo for it
-subprojects {
-    afterEvaluate { Project evaluatedProject ->
-        // TODO read all dependencies, find these with Maven "group" like "com.liferay.soldesk.NNN.ZZZ",
-        //  return the NNN part ~ name of the GPR repo where the artifact was published
-        println configurations
+// cons - cannot handle transitive dependencies, so if an artifacts declared dependency on another from different (soldesk) repo,
+//          we will never be able to add a repo for it
 
-        def usedGprRepos = configurations.collect { allDependencies }.flatten().findAll { Dependency d ->
-            d.group.startsWith('com.liferay.soldesk.')
-        }.collect { Dependency d ->
-            d.group.replace('com.liferay.soldesk.', '')
+allprojects {
+    afterEvaluate { Project evaluatedProject ->
+        def detectedGithubReposNames = []
+        
+        if (inferringEnabled) {
+            // The inferring of repos needed from declared dependencies works as follows:
+            //  1. read all dependencies from all configurations (unresolved, just the way declared),
+            //  2. find these with Maven "group" like "com.liferay.soldesk.NNN.*",
+            //  3. return the NNN part ~ name of the GPR repo where the artifact was published
+
+            detectedGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
+                d.group.startsWith(inferringDependencyGroupIdPrefix)
+            }.collect { Dependency d ->
+                def repoName = d.group.replaceAll(/${inferringDependencyGroupIdPrefix.replace('.', /\./)}([^\.]+).*/, '$1')
+
+                logger.info "[gpr] Detected dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
+
+                return repoName
+            }.unique()
+        } else {
+            logger.info "[gpr] Skipping repositories inferring based on declared dependencies (liferay.gpr.consuming.repos.inferring.enabled == false)"
         }
 
-        println usedGprRepos
+        logger.info """\
+            [gpr] Adding following GitHub repositories owned by '${githubReposOwner}' as Maven repositories for fetching dependencies, using GitHub Packages conventions:
+            [gpr] * configured (liferay.gpr.consuming.repos.names): ${staticGithubReposNames}
+            [gpr] * detected based on dependencies used: ${detectedGithubReposNames}\
+        """.stripIndent()
 
-        usedGprRepos.each { usedGprRepoName ->
+        def githubReposToAddAsMavenRepos = staticGithubReposNames + detectedGithubReposNames
+
+        def _findCredentialsValue = { Project context, String projectPropName, String systemPropName, secret = true ->
+            String value = context.findProperty(projectPropName) ?: System.getProperty(systemPropName)
+
+            String maskedValue = (value && secret) ?
+                    (value.length() > 15 ? value.substring(0, 4) : '') + '***' :
+                    value
+
+            logger.info "[gpr] Read credentials value from ${context}: ${maskedValue} " +
+                    "(first tried project prop named '${projectPropName}', then System prop named '${systemPropName}')"
+
+            return value
+        }.curry(project)
+
+        def githubUsername = _findCredentialsValue("liferay.gpr.consuming.actor", "GITHUB_ACTOR", false)
+        def githubPassword = _findCredentialsValue("liferay.gpr.consuming.token", "GITHUB_TOKEN", true)
+
+        githubReposToAddAsMavenRepos.each { githubRepoName ->
             repositories {
                 maven {
-                    name = "GitHubPackages - ${usedGprRepoName}"
-                    url = uri("https://maven.pkg.github.com/${gitHubReposOwner}/${usedGprRepoName}")
+                    name = "GitHub Packages - ${githubReposOwner}/${githubRepoName}"
+                    url = uri("https://maven.pkg.github.com/${githubReposOwner}/${githubRepoName}")
                     credentials {
                         // allow empty credentials, since all artifacts may already be cached locally
-                        username = project.findProperty("liferay.gpr.consuming.actor")
-                        password = project.findProperty("liferay.gpr.consuming.token")
+                        username githubUsername
+                        password githubPassword
                     }
                 }
             }

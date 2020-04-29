@@ -1,0 +1,52 @@
+project.ext['liferay.gpr.consuming.repos.owner'] = 'owner-AAA'
+project.ext['liferay.gpr.consuming.repos.inferring.enabled'] = 'false'
+project.ext['liferay.gpr.consuming.repos.names'] = 'static-repo-1, static-repo-2, f-another-static-feature-repo'
+
+project.ext['liferay.gpr.consuming.actor'] = 'some_user'
+project.ext['liferay.gpr.consuming.token'] = 'iuwerj2@$%adfaf44'
+
+// Apply the plugin - a local script file
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-consuming.gradle"
+
+
+// traditional
+dependencies {
+    compileOnly group: 'com.liferay.soldesk.f-root-feature-repo', name: 'some-artifact', version: '1.0.3'
+    compileOnly group: 'com.liferay.soldesk.f-another-static-feature-repo', name: 'some-artifact', version: '1.0.3'
+}
+
+
+task runGradleTest {
+    dependsOn assemble
+
+    doLast {
+        println rootProject.repositories.collect { it.name }
+
+        // test url + creds are correct
+        rootProject.repositories.getByName('GitHub Packages - owner-AAA/static-repo-1').with { ArtifactRepository ar ->
+            assert ar.url.toString() == 'https://maven.pkg.github.com/owner-AAA/static-repo-1'
+            assert ar.credentials.username == 'some_user'
+            assert ar.credentials.password == 'iuwerj2@$%adfaf44'
+        }
+
+        // static
+        assert rootProject.repositories.getByName('GitHub Packages - owner-AAA/static-repo-1')
+        assert rootProject.repositories.getByName('GitHub Packages - owner-AAA/static-repo-2')
+        assert rootProject.repositories.getByName('GitHub Packages - owner-AAA/f-another-static-feature-repo')
+
+        // detected based on this root's module build.gradle
+        // none -- disabled
+        
+        project(':modules:forms:form-api').with { module ->
+            println module.repositories.collect { it.name }
+
+            // static
+            assert module.repositories.getByName('GitHub Packages - owner-AAA/static-repo-1')
+            assert module.repositories.getByName('GitHub Packages - owner-AAA/static-repo-2')
+            assert module.repositories.getByName('GitHub Packages - owner-AAA/f-another-static-feature-repo')
+
+            // detected based on declarations in build.gradle of the module
+            // none -- disabled
+        }
+    }
+}

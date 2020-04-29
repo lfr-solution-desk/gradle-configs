@@ -1,0 +1,9 @@
+dependencies {
+	compileOnly group: "com.liferay", name: "com.liferay.dynamic.data.mapping.api"
+	compileOnly group: "com.liferay", name: "com.liferay.osgi.util"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel"
+	compileOnly group: "org.osgi", name: "org.osgi.core"
+
+    compileOnly group: 'com.liferay.soldesk.f-module-feature-repo', name: 'some-artifact', version: '1.0.5'
+    compileOnly group: 'com.example.aaa.f-module-feature-repo',     name: 'some-artifact', version: '1.0.5'
+}
