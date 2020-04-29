@@ -10,10 +10,25 @@ assert rootProject.version && rootProject.version != Project.DEFAULT_VERSION,
                 "either using gradle.properties or in build.gradle before this script plugin is applied."
 
 subprojects {
-    afterEvaluate {
-        // We'll release all modules together (see gpr-publishing.gradle), so default to using
-        // the same version (from root project) with every module of the Liferay Workspace
+    // we'll release all modules together (see gpr-publishing.gradle), so use the same version with every module
+    version = rootProject.version
 
-        version = rootProject.version
+    plugins.withType(JavaPlugin) {
+        // Check if version in bnd.bnd match what is in Gradle and if not, issue a warning?
+        // TODO Or raise an error?
+        if(project.hasProperty('bundle')) {
+            def nonSnapshotGradleVersion = project.version.toString().replace('-SNAPSHOT', '')
+            def bndBndVersion = (bundle['Bundle-Version'] ?: '').toString().replace('${project.version}', project.version)
+
+            // There may be 'Bundle-Version: ${project.version}' in bnd.bnd resolved against the Gradle project
+            //  TODO try this? BndUtil.getInstruction(project, Constants.BUNDLE_VERSION)
+
+            if (nonSnapshotGradleVersion != bndBndVersion) {
+                logger.quiet "[versions] WARNING: The version of ${project} in Gradle (${nonSnapshotGradleVersion}) " +
+                        "does not match the one in bnd.bnd (${bndBndVersion}) (-SNAPSHOT suffix is fine), which may " +
+                        "cause confusion. Ideally, avoid using version ('Bundle-Version' instructions) in bnd.bnd, " +
+                        "so that we can set the same version for all the modules in the whole Liferay Workspace."
+            }
+        }
     }
 }
