@@ -1,0 +1,45 @@
+import java.time.Instant
+
+// invoke this test with some special arguments for the build
+
+// this test runs a real publication; publish into this repo, as if in a real repo of a workspace project
+project.ext['liferay.gpr.publishing.repo.owner' ] = 'lfr-solution-desk'
+project.ext['liferay.gpr.publishing.repo.name' ] = 'gradle-configs'
+
+// the auth will be overridden (in CI) with -P passed to the test; when testing locally,
+// we need something here, so that the test correctluy fails
+project.ext['liferay.gpr.publishing.actor'] = 'test_actor'
+project.ext['liferay.gpr.publishing.token'] = 'test_token'
+
+project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
+
+// FROM 'github.run_number' in GitHub Actions
+rootProject.version = "1.${project.findProperty('GITHUB_RUN_NUMBER')}.${Instant.now().toEpochMilli()}"
+
+// simulate versions/versions.gradle
+subprojects {
+    project.version = rootProject.version
+}
+
+// Apply the plugin - a local script file
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+
+
+task runGradleTest {
+    doLast {
+        assert true
+
+        // TODO determine the published artifact's URL, fetch it, confirm it was published
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        // The publishing tasks are only added once the individual modules are configured, based on their types
+
+        def taskToTest = tasks.findByName('publish')
+        if (taskToTest) {
+            runGradleTest.dependsOn taskToTest
+        }
+    }
+}

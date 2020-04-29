@@ -27,7 +27,6 @@ gradleTest.configure {
     // TODO the Liferay Workspace plugin (2.2.6) is not ready yet
 //    versions '6.3'      // testing forward
 
-
     gradleArguments "--info"
 
     // pointers to the tested script plugin file
@@ -36,6 +35,14 @@ gradleTest.configure {
     gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${sourceSets.main.groovy.srcDirs.first()}"
 
     expectFailure ~/gpr-publishing-local_release-checks/
+
+    if (System.getProperty('gradleTest.environment') == 'ci') {
+        gradleArguments "--project-prop", "liferay.gpr.publishing.actor=${System.getProperty('GITHUB_ACTOR')}"
+        gradleArguments "--project-prop", "liferay.gpr.publishing.token=${System.getProperty('GITHUB_TOKEN')}"
+        gradleArguments "--project-prop", "GITHUB_RUN_NUMBER=${System.getProperty('GITHUB_RUN_NUMBER')}"
+    } else {
+        expectFailure ~/gpr-publishing-remote/
+    }
 
     beforeTest {
         println "  Running gradleTest: ${it.name}"
