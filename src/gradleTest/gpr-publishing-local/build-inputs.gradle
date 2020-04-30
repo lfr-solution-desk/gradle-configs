@@ -1,3 +1,10 @@
+// make sure that if not passed from CLI (== local build), the setProperty() does not fail
+project.ext['liferay.gpr.publishing.actor'] = ''
+project.ext['liferay.gpr.publishing.token'] = ''
+
+project.setProperty('liferay.gpr.publishing.actor', 'publishing_user')
+project.setProperty('liferay.gpr.publishing.token', 'sdfhwer2242h2434')
+
 // customize all supported inputs
 project.ext['liferay.gpr.publishing.repo.owner' ] = 'owner-AAA'
 project.ext['liferay.gpr.publishing.repo.name' ] = 'repo-BBB'
@@ -64,8 +71,8 @@ task runGradleTest {
             publishing.repositories.getByName('GitHubPackages').with { ArtifactRepository ar ->
                 assert ar.url.toString() == 'https://maven.pkg.github.com/owner-AAA/repo-BBB'
 
-                assert ar.credentials.username == findProperty('liferay.gpr.publishing.actor')
-                assert ar.credentials.password == findProperty('liferay.gpr.publishing.token')
+                assert ar.credentials.username == 'publishing_user'
+                assert ar.credentials.password == 'sdfhwer2242h2434'
             }
         }
     }
