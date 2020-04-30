@@ -41,6 +41,9 @@ gradleTest.configure {
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=${System.getProperty('GITHUB_TOKEN')}"
         gradleArguments "--project-prop", "GITHUB_RUN_NUMBER=${System.getProperty('GITHUB_RUN_NUMBER')}"
     } else {
+        gradleArguments "--project-prop", "liferay.gpr.publishing.actor=publishing_user"
+        gradleArguments "--project-prop", "liferay.gpr.publishing.token=sdfhwer2242h2434"
+
         expectFailure ~/gpr-publishing-remote/
     }
 

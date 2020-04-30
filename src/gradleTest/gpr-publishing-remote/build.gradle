@@ -4,10 +4,8 @@
 project.ext['liferay.gpr.publishing.repo.owner' ] = 'lfr-solution-desk'
 project.ext['liferay.gpr.publishing.repo.name' ] = 'gradle-configs'
 
-// the auth will be overridden (in CI) with -P passed to the test; when testing locally,
-// we need something here, so that the test correctly fails
-project.ext['liferay.gpr.publishing.actor'] = 'test_actor'
-project.ext['liferay.gpr.publishing.token'] = 'test_token'
+// the real auth will be passed (in CI) with -P passed to the test; when testing locally,
+// some static values are passed as well
 
 // TODO test publishing RELEASE as well, just increment the version somehow...
 project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
