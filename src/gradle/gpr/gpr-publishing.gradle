@@ -129,6 +129,10 @@ subprojects {
             }
         }
 
+        tasks.findByName('publishGprPublicationToGitHubPackagesRepository').configure {
+            dependsOn 'checkGprPublicationMetadata'
+        }
+
         if(publicationType == 'SNAPSHOT') {
             // override the version used in pom.xml being published
             project.afterEvaluate {
@@ -145,7 +149,7 @@ subprojects {
                 }
             }
         } else if(publicationType == 'RELEASE') {
-            tasks.findByName('publishGprPublicationToGitHubPackagesRepository').configure {
+            tasks.findByName('checkGprPublicationMetadata').configure {
                 dependsOn 'checkNoSnapshotDependenciesUsed'
                 dependsOn 'checkFinalVersionUsed'
             }
@@ -178,6 +182,11 @@ subprojects {
                 throw new PublishException("The version of ${project} is not final, please make sure there is no '-SNAPSHOT' suffix in the version.")
             }
         }
+    }
+
+    tasks.register('checkGprPublicationMetadata') {
+        group "Publishing"
+        description "Checks that all metadata is fine to do the "
     }
 
     // https://docs.gradle.org/5.6.4/userguide/signing_plugin.html#signing_plugin

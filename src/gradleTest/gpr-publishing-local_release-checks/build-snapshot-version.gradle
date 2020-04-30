@@ -6,10 +6,10 @@ apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publ
 
 
 task runGradleTest {
-    dependsOn clean, ':modules:forms:form-api:checkGprPublicationMetadata'
+    dependsOn clean, ':modules:forms:form-api:checkFinalVersionUsed'
 
     doLast {
-        // no-op -- should fail
+        // no-op -- should fail because of -SNAPSHOT used as the dependency
     }
 }
 
