@@ -15,4 +15,4 @@ apply plugin: "net.saliman.properties"
 
 apply plugin: "com.liferay.workspace"
 
-rootProject.name = 'f-gpr-publishing-repo-remote'
+rootProject.name = 'f-published-repo-sample'
