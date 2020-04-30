@@ -1,0 +1,43 @@
+// make sure that if not passed from CLI (== local build), the setProperty() does not fail
+project.ext['liferay.gpr.publishing.actor'] = ''
+project.ext['liferay.gpr.publishing.token'] = ''
+
+project.setProperty('liferay.gpr.publishing.actor', 'publishing_user')
+project.setProperty('liferay.gpr.publishing.token', 'sdfhwer2242h2434')
+
+// invoke this test with some special arguments for the build
+project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
+project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.liferay.soldesk.gradle-configs-gradleTest-mavenLocal'
+
+// simulate versions/versions.gradle
+subprojects {
+    project.version = rootProject.version
+}
+
+// Apply the plugin - a local script file
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+
+
+task runGradleTest {
+    dependsOn clean
+
+    doLast {
+        assert project.file('modules/forms/form-api/build/publications/gpr/pom-default.xml').isFile()
+        assert project.file('modules/forms/form-api/build/libs/com.liferay.gs.form.api-1.0.3.jar').isFile()
+
+        // NOT generated for SNAPSHOTs
+        assert project.file('modules/forms/form-api/build/libs/').listFiles().find { it.name.endsWith('-sources.jar') } == null
+        assert project.file('modules/forms/form-api/build/libs/').listFiles().find { it.name.endsWith('-javadoc.jar') } == null
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        // The publishing tasks are only added once the individual modules are configured, based on their types
+
+        def taskToTest = tasks.findByName('publishToMavenLocal')
+        if (taskToTest) {
+            runGradleTest.dependsOn taskToTest
+        }
+    }
+}

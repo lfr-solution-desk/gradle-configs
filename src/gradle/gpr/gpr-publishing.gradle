@@ -37,6 +37,7 @@ assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE 
 
 String groupIdTemplate = project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
 String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: '${projectName}'
+
 //String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
 
 def resolveTemplate = { String template, Project moduleProject ->
@@ -51,6 +52,10 @@ def resolveTemplate = { String template, Project moduleProject ->
 def resolveGroupIdTemplate = resolveTemplate.curry(groupIdTemplate)
 def resolveArtifactIdTemplate = resolveTemplate.curry(artifactIdTemplate)
 
+boolean publishSources = Boolean.parseBoolean(project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true')
+boolean publishJavadoc = Boolean.parseBoolean(project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true')
+
+
 gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     // Make the GPR auth properties mandatory, since credentials for GPR will always be required when publishing
     if(tg.allTasks.find { it.name == 'publishGprPublicationToGitHubPackagesRepository' }) {
@@ -62,8 +67,9 @@ gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     }
 }
 
-logger.info "[gpr] githubRepoOwner= ${githubRepoOwner} | githubRepoName= ${githubRepoName} | " +
-            "groupIdTemplate= ${groupIdTemplate} | publicationType: ${publicationType}"
+logger.info """[gpr] githubRepoOwner= ${githubRepoOwner} | githubRepoName= ${githubRepoName} | publicationType= ${publicationType} | \
+groupIdTemplate= ${groupIdTemplate} | artifactIdTemplate= ${artifactIdTemplate} | \
+publishSources= ${publishSources} | publishJavadoc= ${publishJavadoc}"""
 
 subprojects {
     // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages
@@ -106,13 +112,25 @@ subprojects {
 
                     from components.java
 
-                    // workaround, where -source is not supported when updating snapshots
+                    // workaround, where -sources or -javadoc is not supported when updating snapshots
+                    // (prevents snapshot to be overwritten with next publication of the same SNAPSHOT version)
                     // see: https://github.community/t5/GitHub-API-Development-and/Github-Package-snapshot-build-number-not-updating/m-p/55177/highlight/true#M4672
                     if(publicationType == 'RELEASE') {
-                        artifact sourcesJar
+                        if (publishSources) {
+                            artifact sourcesJar
+                        }
 
-                        // TODO cannot generate javadoc, there are 100s of errors in the source files
-                        //                    artifact javadocJar
+                        if (publishJavadoc) {
+                            artifact javadocJar
+                        }
+                    } else if (publicationType == 'SNAPSHOT') {
+                        if (publishSources) {
+                            logger.info "[gpr] The '-sources' artifact won't get published, since not supported for GitHup Packages repo for SNAPSHOT artifacts"
+                        }
+
+                        if (publishJavadoc) {
+                            logger.info "[gpr] The '-javadoc' artifact won't get published, since not supported for GitHup Packages repo for SNAPSHOT artifacts"
+                        }
                     }
 
                     pom {
