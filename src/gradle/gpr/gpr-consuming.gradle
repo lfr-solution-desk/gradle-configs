@@ -19,6 +19,22 @@ assert inferringDependencyGroupIdPrefix.endsWith('.'), "Please make sure that 'l
 List<String> staticGithubReposNames =
         (project.findProperty('liferay.gpr.consuming.repos.names') ?: '').toString().split(/,\s*/).findAll{ it }
 
+def _findCredentialsValue = { Project contextProject, String projectPropName, String systemPropName, secret = true ->
+    String value = contextProject.findProperty(projectPropName) ?: System.getProperty(systemPropName)
+
+    String maskedValue = (value && secret) ?
+            (value.length() > 15 ? value.substring(0, 4) : '') + '***' :
+            value
+
+    logger.info "[gpr] Read GitHuB credentials value: ${maskedValue} " +
+            "(first tried project prop named '${projectPropName}', then System prop named '${systemPropName}')"
+
+    return value
+}.curry(rootProject)
+
+def githubUsername = _findCredentialsValue("liferay.gpr.consuming.actor", "GITHUB_ACTOR", false)
+def githubPassword = _findCredentialsValue("liferay.gpr.consuming.token", "GITHUB_TOKEN", true)
+
 // Approach 1 - inspect dependencies, declare repositories based on them
 // pros - only the ones are declared
 // cons - cannot handle transitive dependencies, so if an artifacts declared dependency on another from different (soldesk) repo,
@@ -26,7 +42,7 @@ List<String> staticGithubReposNames =
 
 allprojects {
     afterEvaluate { Project evaluatedProject ->
-        def detectedGithubReposNames = []
+        def inferredGithubReposNames = []
         
         if (inferringEnabled) {
             // The inferring of repos needed from declared dependencies works as follows:
@@ -34,12 +50,12 @@ allprojects {
             //  2. find these with Maven "group" like "com.liferay.soldesk.NNN.*",
             //  3. return the NNN part ~ name of the GPR repo where the artifact was published
 
-            detectedGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
+            inferredGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
                 d.group.startsWith(inferringDependencyGroupIdPrefix)
             }.collect { Dependency d ->
                 def repoName = d.group.replaceAll(/${inferringDependencyGroupIdPrefix.replace('.', /\./)}([^\.]+).*/, '$1')
 
-                logger.info "[gpr] Detected dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
+                logger.info "[gpr] Found dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
 
                 return repoName
             }.unique()
@@ -50,26 +66,10 @@ allprojects {
         logger.info """\
             [gpr] Adding following GitHub repositories owned by '${githubReposOwner}' as Maven repositories for fetching dependencies, using GitHub Packages conventions:
             [gpr] * configured (liferay.gpr.consuming.repos.names): ${staticGithubReposNames}
-            [gpr] * detected based on dependencies used: ${detectedGithubReposNames}\
+            [gpr] * inferred based on dependencies used: ${inferredGithubReposNames}\
         """.stripIndent()
 
-        def githubReposToAddAsMavenRepos = staticGithubReposNames + detectedGithubReposNames
-
-        def _findCredentialsValue = { Project context, String projectPropName, String systemPropName, secret = true ->
-            String value = context.findProperty(projectPropName) ?: System.getProperty(systemPropName)
-
-            String maskedValue = (value && secret) ?
-                    (value.length() > 15 ? value.substring(0, 4) : '') + '***' :
-                    value
-
-            logger.info "[gpr] Read credentials value from ${context}: ${maskedValue} " +
-                    "(first tried project prop named '${projectPropName}', then System prop named '${systemPropName}')"
-
-            return value
-        }.curry(project)
-
-        def githubUsername = _findCredentialsValue("liferay.gpr.consuming.actor", "GITHUB_ACTOR", false)
-        def githubPassword = _findCredentialsValue("liferay.gpr.consuming.token", "GITHUB_TOKEN", true)
+        def githubReposToAddAsMavenRepos = staticGithubReposNames + inferredGithubReposNames
 
         githubReposToAddAsMavenRepos.each { githubRepoName ->
             repositories {
