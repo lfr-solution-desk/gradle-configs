@@ -36,8 +36,7 @@ assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE 
 //      * form-api
 
 String groupIdTemplate = project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
-String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: '${projectName}'
-//String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
+String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
 
 def resolveTemplate = { String template, Project moduleProject ->
     def binding = [
@@ -133,12 +132,12 @@ subprojects {
         if(publicationType == 'SNAPSHOT') {
             // override the version used in pom.xml being published
             project.afterEvaluate {
-                logger.info "[gpr] Forcing SNAPSHOT version to be published for ${project}"
+                logger.info "[gpr] Overriding version of ${project} to be published as a -SNAPSHOT"
 
-                if (!project.version.endsWith('-SNAPSHOT')) {
-                    publishing {
-                        publications.getByName('gpr') { publication ->
-                            pom {
+                publishing {
+                    publications.getByName('gpr') { MavenPublication publication ->
+                        pom {
+                            if(!publication.version.endsWith('-SNAPSHOT')) {
                                 version = "${publication.version}-SNAPSHOT"
                             }
                         }
