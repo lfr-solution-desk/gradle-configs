@@ -36,7 +36,8 @@ assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE 
 //      * form-api
 
 String groupIdTemplate = project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
-String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
+String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: '${projectName}'
+//String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
 
 def resolveTemplate = { String template, Project moduleProject ->
     def binding = [

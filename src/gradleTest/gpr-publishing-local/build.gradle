@@ -18,7 +18,7 @@ task runGradleTest {
         // all defaults, no version set anywhere
         project.file('modules/forms/form-api/build/publications/gpr/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api</artifactId>')
+            assert it.contains('<artifactId>form-api</artifactId>')
             assert it.contains('<version>unspecified</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
@@ -29,7 +29,7 @@ task runGradleTest {
 
         project.file('modules/forms/form-api-2/build/publications/gpr/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-2</artifactId>')
+            assert it.contains('<artifactId>form-api-2</artifactId>')
             assert it.contains('<version>1.0.2</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
@@ -40,7 +40,7 @@ task runGradleTest {
 
         project.file('modules/forms/form-api-3/build/publications/gpr/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-3</artifactId>')
+            assert it.contains('<artifactId>form-api-3</artifactId>')
             assert it.contains('<version>2.1.2</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
