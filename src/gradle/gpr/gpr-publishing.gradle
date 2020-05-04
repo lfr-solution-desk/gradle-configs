@@ -2,43 +2,18 @@
 // (as Maven artifacts), defaulting to using Solution Desk GitHub organization as the target of the packages.
 // The to be applied from Liferay Workspace -> build.gradle
 
-// The location on GitHub where the project's artifacts are published;
-// assume all Solution Desk projects live in 'lfr-solution-desk' (owner) and
-// the repo named exactly as the same of the root project in Gradle (see settings.gradle of the project)
+// For documentation of the input properties, see 'src/gradle/gpr/gradle.properties'
 
 // TODO we could even probably deduce the repo's name from 'git' info (grgit plugin or something) if needed,
 //  but I think it's fine to take this from Gradle
 String githubRepoOwner = project.findProperty('liferay.gpr.publishing.repo.owner') ?: 'lfr-solution-desk'
 String githubRepoName = project.findProperty('liferay.gpr.publishing.repo.name') ?: rootProject.name
 
-// If set to 'SNAPSHOT', the published version of all modules (as taken from Gradle, not from bnd.bnd!) are updated
-// to be *-SNAPSHOT:
-//  - if version ends with -SNAPSHOT => keep as is
-//  - if version is anything else => append -SNAPSHOT
-// This helps with publishing without a release, when versions may not be raised all the time, but we want
-// people to get the possibility to fetch updated artifacts.
-// If set to 'RELEASE':
-//  - all dependencies are forced to be "final" (non-SNAPSHOT) (build is failed if not satisfied)
-//  - all versions are forced to be non-SNAPSHOT (the suffix is removed, if found)
-
 String publicationType = project.findProperty('liferay.gpr.publishing.type') ?: 'RELEASE'
 assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE or SNAPSHOT for 'liferay.gpr.publishing.type'."
 
-// The templates to be used when determining Maven "group ID" and "artifact ID" of a single module and
-// creating pom.xml for a module. Following variables are supported:
-//  * ${rootProjectName} ~ rootProject.name
-//      * f-liferay-forms-framework
-//  * ${projectGroup} ~ project.group
-//      * path in the Gradle project from root, including the root project's name
-//      * f-liferay-forms-framework.modules.form
-//  * ${projectName} ~ project.name
-//      * the name of the module as a Gradle project
-//      * form-api
-
 String groupIdTemplate = project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
 String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: '${projectName}'
-
-//String artifactIdTemplate = project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
 
 def resolveTemplate = { String template, Project moduleProject ->
     def binding = [
@@ -52,8 +27,8 @@ def resolveTemplate = { String template, Project moduleProject ->
 def resolveGroupIdTemplate = resolveTemplate.curry(groupIdTemplate)
 def resolveArtifactIdTemplate = resolveTemplate.curry(artifactIdTemplate)
 
-boolean publishSources = Boolean.parseBoolean(project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true')
-boolean publishJavadoc = Boolean.parseBoolean(project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true')
+boolean publishSources = (project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true').toString().toBoolean()
+boolean publishJavadoc = (project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true').toString().toBoolean()
 
 
 gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
