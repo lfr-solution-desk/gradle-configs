@@ -9,8 +9,10 @@ apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-cons
 
 // traditional
 dependencies {
-    compileOnly group: 'com.liferay.soldesk.f-root-feature-repo', name: 'some-artifact', version: '1.0.3'
+    compileOnly group: 'com.liferay.soldesk.f-root-feature-repo',           name: 'some-artifact', version: '1.0.3'
     compileOnly group: 'com.liferay.soldesk.f-another-static-feature-repo', name: 'some-artifact', version: '1.0.3'
+
+
 }
 
 

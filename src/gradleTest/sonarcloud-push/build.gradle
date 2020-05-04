@@ -1,0 +1,10 @@
+// Nice to have for SonarCloud
+version = '1.3.2'
+description = 'Sample Liferay Workspace project analyzed by SonarScanner #1'
+
+// Apply the plugin - a local script file
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/sonarcloud/sonarcloud.gradle"
+
+task runGradleTest {
+    dependsOn 'sonarqube'
+}

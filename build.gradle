@@ -23,6 +23,7 @@ gradleTest.configure {
 
     versions gradle.gradleVersion
     versions '5.6.4'    // default in the latest Liferay Workspace template
+//    versions '4.8.1'    // often used by older workspace projects
 
     // TODO the Liferay Workspace plugin (2.2.6) is not ready yet
 //    versions '6.3'      // testing forward
@@ -36,15 +37,21 @@ gradleTest.configure {
 
     expectFailure ~/gpr-publishing-local_release-checks/
 
+    expectFailure ~/sonarcloud-noAuthToken/
+
     if (System.getProperty('gradleTest.environment') == 'ci') {
         gradleArguments "--project-prop", "liferay.gpr.publishing.actor=${System.getProperty('GITHUB_ACTOR')}"
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=${System.getProperty('GITHUB_TOKEN')}"
         gradleArguments "--project-prop", "GITHUB_RUN_NUMBER=${System.getProperty('GITHUB_RUN_NUMBER')}"
+
+        gradleArguments "-Dsonar.login=${System.getProperty('SONAR_TOKEN')}"
     } else {
         gradleArguments "--project-prop", "liferay.gpr.publishing.actor=publishing_user"
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=sdfhwer2242h2434"
-
         expectFailure ~/gpr-publishing-remote/
+
+        gradleArguments "-Dsonar.login=aasdf345IUERW"
+        expectFailure ~/sonarcloud-push/
     }
 
     beforeTest {

@@ -25,6 +25,7 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          SONAR_TOKEN: $secrets.SONAR_TOKEN }}
         # See /build.gradle on how gradleTest task is configured and reacts to the gradleTest.environment
         run: |
           ./gradlew check \
@@ -32,4 +33,5 @@ jobs:
               -DgradleTest.environment=ci \
               -DGITHUB_ACTOR=${GITHUB_ACTOR} \
               -DGITHUB_TOKEN=${GITHUB_TOKEN} \
-              -DGITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
+              -DGITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER} \
+              -DSONAR_TOKEN=${SONAR_TOKEN}

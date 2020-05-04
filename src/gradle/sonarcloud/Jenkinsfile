@@ -1,0 +1,81 @@
+package sonarcloud
+
+pipeline {
+    options {
+    }
+
+    environment {
+        // Custom credentials for SonarCloud (type == secret text)
+        SONAR_TOKEN = credentials('sonarcloud')
+    }
+
+    stages {
+        stage('Quality Analysis') {
+            stages {
+                // >>>>> NOTE <<<<<
+                //
+                // -Psonar.branch.name OR -Psonar.pullrequest.key requires full-depth clone
+                // (complete history of commits), but the job in DXPC Jenkins uses shallow clone (depth=1) by default!
+                //
+                // Without -Psonar.branch.name, SonarCloud will associate the analyzed code always with "master".
+                // TODO test "-Dsonar.scm.disabled=true" (enabled by default in SonarCloud UI)
+
+                // Inspired by: https://blog.jdriven.com/2019/08/sonarcloud-github-pull-request-analysis-from-jenkins/
+
+                stage('SonarCloud - branch') {
+                    when {
+                        not { changeRequest() }
+                    }
+
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            withEnv([
+                                    'GRADLE_OPTS=-XX:MaxMetaspaceSize=512m'
+                            ]) {
+                                sh '''\
+                                        ./gradlew --no-daemon --stacktrace --info \
+                                            -Dsonar.login=$SONAR_TOKEN \
+                                            -Dsonar.branch.name=$BRANCH_NAME \
+                                            sonarqube
+                                   '''.stripIndent().trim()
+                            }
+                        }
+                    }
+                }
+
+                stage('SonarCloud - PR') {
+                    when {
+                        changeRequest()
+                    }
+
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            withEnv([
+                                    'GRADLE_OPTS=-XX:MaxMetaspaceSize=512m'
+                            ]) {
+                                sh '''\
+                                        #!/bin/bash
+                            
+                                        set -euxo pipefail
+
+                                        # Sample of CHANGE_URL (input): https://github.com/liferay/lfrgs-liferay-damage-control/pull/1489            
+                                        # Sample of github_repo (output): liferay/lfrgs-liferay-damage-control            
+                                        github_repo=$(echo $CHANGE_URL | sed 's/https:\\/\\/github.com\\/\\(.*\\)\\/pull\\/[0-9]*/\\1/\')
+
+                                        ./gradlew --no-daemon --stacktrace --info \
+                                            -Dsonar.login=$SONAR_TOKEN \
+                                            -Dsonar.pullrequest.provider=GitHub \
+                                            -Dsonar.pullrequest.github.repository=$github_repo \
+                                            -Dsonar.pullrequest.key=$CHANGE_ID \
+                                            -Dsonar.pullrequest.base=$CHANGE_TARGET \
+                                            -Dsonar.pullrequest.branch=$CHANGE_BRANCH \
+                                            sonarqube
+                                   '''.stripIndent().trim()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

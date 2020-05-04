@@ -9,7 +9,7 @@ project.ext['liferay.gpr.consuming.token'] = 'iuwerj2@$%adfaf44'
 
 // traditional
 dependencies {
-    compileOnly group: 'com.example.aaa.f-root-feature-repo', name: 'some-artifact', version: '1.0.3'
+    compileOnly group: 'com.example.aaa.f-root-feature-repo',           name: 'some-artifact', version: '1.0.3'
     compileOnly group: 'com.example.aaa.f-another-static-feature-repo', name: 'some-artifact', version: '1.0.3'
 }
 
