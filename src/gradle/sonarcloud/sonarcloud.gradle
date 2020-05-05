@@ -53,7 +53,7 @@ subprojects {
     }
 
     plugins.withType(JavaPlugin) {
-        logger.info "Java module detected: ${project}"
+        logger.info "[sonarcloud] Java module detected: ${project}"
 
         sonarqube {
             properties {
@@ -68,7 +68,7 @@ subprojects {
                     properties['sonar.tests'] += sourceSets.testIntegration.resources.srcDirs.findAll { it.isDirectory() }
                 }
 
-                logger.info "Read SonarScanner properties for ${project}"
+                logger.info "[sonarcloud] Read SonarScanner properties for ${project}"
             }
         }
 
@@ -84,7 +84,7 @@ subprojects {
     }
 
     plugins.withType(WarPlugin) {
-        logger.info "War module detected: ${project}"
+        logger.info "[sonarcloud] War module detected: ${project}"
 
         sonarqube {
             properties {
@@ -93,14 +93,14 @@ subprojects {
                     properties['sonar.sources'] += war.webAppDir
                 }
 
-                logger.info "Read SonarScanner properties for ${project}"
+                logger.info "[sonarcloud] Read SonarScanner properties for ${project}"
             }
         }
     }
 
     plugins.withId('com.liferay.node') {
         if(analyzeNodeModules) {
-            logger.info "NodeJS module detected: ${project}"
+            logger.info "[sonarcloud] NodeJS module detected: ${project}"
 
             // Try the most common dir 'src' and any extras configured by users
             def nodeModuleSources = [ project.file('src/') ].addAll(extraAnalyzedNodeModulesSourceDirs.collect { project.file(it) })
@@ -117,7 +117,7 @@ subprojects {
             }
         }
         else {
-            logger.info "NodeJS module detected, but not analyzed as such: ${project}"
+            logger.info "[sonarcloud] NodeJS module detected, but not analyzed as such: ${project}"
         }
     }
 }
