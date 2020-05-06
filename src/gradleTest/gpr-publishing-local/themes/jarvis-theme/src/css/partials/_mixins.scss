@@ -1,0 +1,11 @@
+@import 'mdc-elevation/mixin';
+
+@mixin label-color-variant($color, $border-color) {
+	border-color: $border-color;
+	color: $color;
+}
+
+@mixin letter-spacing($unit) {
+	letter-spacing: $unit;
+	margin-right: -$unit;
+}

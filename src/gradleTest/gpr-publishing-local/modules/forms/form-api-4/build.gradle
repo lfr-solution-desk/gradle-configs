@@ -8,12 +8,12 @@ dependencies {
 version = '2.1.2'
 
 publishing {
-    publications.getByName('gpr') {
-        pom {
+    publications {
+        nebula (MavenPublication) {
             groupId = 'XXX'
             artifactId = 'YYY'
-            version = '3.3.3'
-            description = 'AAAAA'
+
+            version = '3.2.3'
         }
     }
 }

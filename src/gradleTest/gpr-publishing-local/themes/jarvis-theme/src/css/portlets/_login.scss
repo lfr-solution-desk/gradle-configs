@@ -1,0 +1,132 @@
+body.signed-out {
+	background: $primary;
+	background-image: -moz-linear-gradient(-90deg, rgb(38, 80, 115) 0%, rgb(30, 64, 86) 100%),
+		-ms-linear-gradient(-90deg, rgb(38, 80, 115) 0%, rgb(30, 64, 86) 100%),
+		-webkit-linear-gradient(-90deg, rgb(38, 80, 115) 0%, rgb(30, 64, 86) 100%);
+	color: #FFF;
+
+	&:after {
+		background: url(../images/jarvisworldbg.png) no-repeat center center fixed;
+		background-size: contain;
+		bottom: 0;
+		content: "";
+		left: 0;
+		opacity: 0.5;
+		position: absolute;
+		right: 0;
+		top: 0;
+		z-index: -1;
+	}
+
+	#wrapper {
+		height: 100vh;
+	}
+
+	#content-inner-wrapper {
+		background-color: $primary;
+		background-image: -moz-linear-gradient(90deg, rgb(38, 80, 115) 0%, rgb(46, 98, 140) 100%),
+			-ms-linear-gradient(90deg, rgb(38, 80, 115) 0%, rgb(46, 98, 140) 100%),
+			-webkit-linear-gradient(90deg, rgb(38, 80, 115) 0%, rgb(46, 98, 140) 100%);
+		border-radius: 10px;
+		box-shadow: -2px 3px 7px 0 rgba(0, 0, 0, 0.35), 2px 3px 7px 0 rgba(0, 0, 0, 0.35);
+		left: 50%;
+		margin: 0 auto;
+		position: fixed;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: 375px;
+
+		#main-content {
+			background: url(../images/jarvislogo.png) center top no-repeat border-box;
+			background-size: contain;
+		}
+
+		.heading {
+			display: block;
+			font-family: $font-sans;
+			font-weight: normal;
+			margin: 0 auto;
+			text-align: center;
+		}
+
+		.portlet {
+			margin: 80px 0 0;
+		}
+
+		.sign-in-form {
+			margin: $space-stack-default;
+		}
+
+		.form-group {
+			margin: $space-stack-default;
+
+			&.has-success .control-label {
+				color: #5AD65C; // The default AUI success is not readble on the primary blue
+			}
+
+			&.has-error .control-label,
+			&.has-error .help-block {
+				color: #F47D59; // The default AUI danger is not readble on the primary blue
+			}
+		}
+
+		.input-checkbox-wrapper {
+			padding-top: $space-default;
+		}
+
+		.button-holder {
+			bottom: 0;
+			margin-bottom: 8px;
+			position: absolute;
+			right: 0;
+		}
+
+		.btn-primary {
+			border-color: #FFF;
+
+			&:active {
+				background-color: darken($primary, 20%);
+			}
+
+			&:hover {
+				background-color: darken($primary, 10%);
+			}
+
+			&:active,
+			&:focus,
+			&:hover,
+			&:active:focus,
+			&:active:hover {
+				border-color: #FFF;
+			}
+		}
+
+		.navigation a {
+			color: #FFF;
+
+			&:hover,
+			&:focus {
+				color: #FFF;
+			}
+		}
+
+		.text-default {
+			color: #FFF;
+		}
+
+		.lfr-alert-container.inline-alert-container {
+			position: absolute;
+			top: -80px;
+		}
+	}
+
+	#footer {
+		bottom: 0;
+		position: absolute;
+
+		a {
+			color: #FFF;
+			font-weight: 600;
+		}
+	}
+}

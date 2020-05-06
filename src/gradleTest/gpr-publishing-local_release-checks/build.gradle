@@ -1,22 +1,27 @@
 // invoke this test with some special arguments for the build
-project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
+project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
 
+allprojects {
+    version = '1.1.0'
+}
 
 task runGradleTest {
-    dependsOn clean, ':modules:forms:form-api:checkGprPublicationMetadata'
+    dependsOn clean, ':modules:forms:form-api:verifyPublication'
 
     doLast {
-        // no-op -- should fail
+        // this is actually a valid build
+
+        assert false
     }
 }
 
-subprojects {
+allprojects {
     afterEvaluate {
         // The publishing tasks are only added once the individual modules are configured, based on their types
-        def taskToTest = tasks.findByName('generatePomFileForGprPublication')
+        def taskToTest = tasks.findByName('generatePomFileForNebulaPublication')
         if (taskToTest) {
             runGradleTest.dependsOn taskToTest
         }

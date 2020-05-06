@@ -31,7 +31,7 @@ task runGradleTest {
     }
 }
 
-subprojects {
+allprojects {
     afterEvaluate {
         // The publishing tasks are only added once the individual modules are configured, based on their types
 
