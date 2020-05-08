@@ -14,11 +14,6 @@ project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
 // FROM 'github.run_number' in GitHub Actions
 rootProject.version = "1.${project.findProperty('GITHUB_RUN_NUMBER')}.${Instant.now().toEpochMilli()}"
 
-// simulate versions/versions.gradle
-subprojects {
-    project.version = rootProject.version
-}
-
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
 

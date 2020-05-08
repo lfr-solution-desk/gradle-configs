@@ -1,0 +1,45 @@
+name: "Main CI"
+
+on:
+  push:
+    branches:
+      - master
+      - releases/*
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build_and_test:
+    name: Build and run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Set up JDK 8'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: 'Run tests'
+        run: |
+          ./gradlew check
+
+  publish_snapshots:
+    name: Publish Artifacts as SNAPSHOT versions into GitHub Packages repo
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.repository, 'lfr-solution-desk/') && (startsWith(github.ref, 'refs/heads/releases/') || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Set up JDK 8'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: 'Publish'
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew publish \
+              -x check \
+              -Pliferay.gpr.publishing.actor=${GITHUB_ACTOR} \
+              -Pliferay.gpr.publishing.token=${GITHUB_TOKEN} \
+              -Pliferay.gpr.publishing.type=SNAPSHOT

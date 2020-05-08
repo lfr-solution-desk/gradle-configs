@@ -1,9 +1,6 @@
 // invoke this test with some special arguments for the build
 project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
-
-allprojects {
-    version = '1.2.0'
-}
+project.ext['liferay.gpr.publishing.version.source' ] = 'GRADLE_PROJECT'
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
@@ -65,7 +62,7 @@ task runGradleTest {
         project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
             assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.jarvis-theme</artifactId>')
-            assert it.contains('<version>1.2.0-SNAPSHOT</version>')
+            assert it.contains('<version>1.0.0-SNAPSHOT</version>')
             assert it.contains('<packaging>war</packaging>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')

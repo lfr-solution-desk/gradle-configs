@@ -1,5 +1,6 @@
 {
 	"name": "jarvis-theme",
+	"version": "1.0.0",
 	"main": "package.json",
 	"keywords": [
 		"liferay-theme"

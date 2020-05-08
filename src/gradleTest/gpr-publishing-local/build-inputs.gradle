@@ -1,11 +1,16 @@
 // customize all supported inputs
 project.ext['liferay.gpr.publishing.repo.owner' ] = 'owner-AAA'
 project.ext['liferay.gpr.publishing.repo.name' ] = 'repo-BBB'
-project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.example.nnn.xxx'
-project.ext['liferay.gpr.publishing.artifactid.template' ] = 'com2.example2.nnn2.${projectName}'
 
 project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
 
+project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.example.nnn.xxx'
+project.ext['liferay.gpr.publishing.artifactid.template' ] = 'com2.example2.nnn2.${projectName}'
+project.ext['liferay.gpr.publishing.version.source' ] = 'GRADLE_PROJECT'
+project.ext['liferay.gpr.publishing.sources.published' ] = 'false'
+project.ext['liferay.gpr.publishing.javadoc.published' ] = 'false'
+
+// since the publishing version will be per-project, set some default for them
 allprojects {
     version = '1.2.0'
 }
@@ -79,7 +84,7 @@ task runGradleTest {
         project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.example.nnn.xxx</groupId>')
             assert it.contains('<artifactId>com2.example2.nnn2.jarvis-theme</artifactId>')
-            assert it.contains('<version>1.2.0</version>')
+            assert it.contains('<version>1.0.0</version>')
             assert it.contains('<packaging>war</packaging>')
 
             assert it.contains('owner-AAA/repo-BBB')

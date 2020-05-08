@@ -5,9 +5,5 @@ dependencies {
 	compileOnly group: "org.osgi", name: "org.osgi.core"
 }
 
-version = '3.2.3'
-
-project.gpr {
-    groupId = 'XXX'
-    artifactId = 'YYY'
-}
+// TODO implement
+//project.gpr.published = false

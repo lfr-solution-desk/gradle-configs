@@ -1,10 +1,5 @@
-allprojects {
-    version = '1.2.0'
-}
-
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
-
 
 task runGradleTest {
     dependsOn clean
@@ -29,7 +24,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
             assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-2</artifactId>')
-            assert it.contains('<version>1.0.2-SNAPSHOT</version>')
+            assert it.contains('<version>1.2.0-SNAPSHOT</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
         }
@@ -40,7 +35,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
             assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-3</artifactId>')
-            assert it.contains('<version>2.1.2-SNAPSHOT</version>')
+            assert it.contains('<version>1.2.0-SNAPSHOT</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
         }
@@ -51,7 +46,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-4/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>XXX</groupId>')
             assert it.contains('<artifactId>YYY</artifactId>')
-            assert it.contains('<version>3.2.3-SNAPSHOT</version>')
+            assert it.contains('<version>1.2.0-SNAPSHOT</version>')
 
             assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
         }

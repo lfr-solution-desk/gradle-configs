@@ -7,13 +7,7 @@ project.ext['liferay.gpr.publishing.repo.name' ] = 'gradle-configs'
 // the real auth will be passed (in CI) with -P passed to the test; when testing locally,
 // some static values are passed as well
 
-// TODO test publishing RELEASE as well, just increment the version somehow...
 project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
-
-// simulate versions/versions.gradle
-subprojects {
-    project.version = rootProject.version
-}
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"

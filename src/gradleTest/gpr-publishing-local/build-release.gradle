@@ -1,10 +1,6 @@
 // invoke this test with some special arguments for the build
 project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
 
-allprojects {
-    version = '1.2.0'
-}
-
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
 
@@ -27,7 +23,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
             assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-2</artifactId>')
-            assert it.contains('<version>1.0.2</version>')
+            assert it.contains('<version>1.2.0</version>')
         }
 
         // version set in bnd.bnd AND build.gradle
@@ -36,7 +32,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
             assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-3</artifactId>')
-            assert it.contains('<version>2.1.2</version>')
+            assert it.contains('<version>1.2.0</version>')
         }
 
         // version set in bnd.bnd + build.gradle + changed via build.gradle -> pom {}
@@ -45,7 +41,7 @@ task runGradleTest {
         project.file('modules/forms/form-api-4/build/publications/nebula/pom-default.xml').text.with {
             assert it.contains('<groupId>XXX</groupId>')
             assert it.contains('<artifactId>YYY</artifactId>')
-            assert it.contains('<version>3.2.3</version>')
+            assert it.contains('<version>1.2.0</version>')
         }
 
         // check the target Maven repo was set up as expected
