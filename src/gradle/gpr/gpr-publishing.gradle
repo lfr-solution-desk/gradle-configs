@@ -8,9 +8,7 @@ import groovy.transform.Immutable
 
 buildscript {
     repositories { jcenter() }
-    dependencies {
-        classpath 'com.netflix.nebula:nebula-publishing-plugin:17.2.1'
-    }
+    dependencies { classpath 'com.netflix.nebula:nebula-publishing-plugin:17.2.1' }
 }
 
 // TODO we could even probably deduce the repo's name from 'git' info (grgit plugin or something) if needed,
@@ -21,20 +19,22 @@ final String githubRepoName = project.findProperty('liferay.gpr.publishing.repo.
 final String publicationType = project.findProperty('liferay.gpr.publishing.type') ?: 'SNAPSHOT'
 assert publicationType in [ 'RELEASE', 'SNAPSHOT' ], "Please use either RELEASE or SNAPSHOT for 'liferay.gpr.publishing.type'."
 
-final String groupIdTemplate =
-        project.findProperty('liferay.gpr.publishing.groupid.template') ?: 'com.liferay.soldesk.${rootProjectName}'
-final String artifactIdTemplate =
-        project.findProperty('liferay.gpr.publishing.artifactid.template') ?: 'com.liferay.soldesk.${rootProjectName}.${projectName}'
+final String publishedGroupId = project.findProperty('liferay.gpr.publishing.groupid') ?: "com.liferay.soldesk.${rootProject.name}"
+final String publishedArtifactId = project.findProperty('liferay.gpr.publishing.artifactid') ?: "${publishedGroupId}.${project.name}"
+
 final String versionSource = project.findProperty('liferay.gpr.publishing.version.source') ?: 'GRADLE_ROOT_PROJECT'
 assert versionSource in [ 'GRADLE_ROOT_PROJECT', 'GRADLE_PROJECT' ], "Please use GRADLE_ROOT_PROJECT or GRADLE_PROJECT for 'liferay.gpr.publishing.version.source'."
 
-final boolean publishSourcesDefault = (project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true').toString().toBoolean()
-final boolean publishJavadocDefault = (project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true').toString().toBoolean()
+final boolean sourcesPublished = (project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true').toString().toBoolean()
+final boolean javadocPublished = (project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true').toString().toBoolean()
+
+final String actor = project.findProperty('liferay.gpr.publishing.actor')
+final String token = project.findProperty('liferay.gpr.publishing.token')
 
 gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     // Make the GPR auth properties mandatory, since credentials for GPR will always be required when publishing
     if(tg.allTasks.find { it.name == 'publishNebulaPublicationToGitHubPackagesRepository' }) {
-        if(!findProperty('liferay.gpr.publishing.actor') || !findProperty('liferay.gpr.publishing.token')) {
+        if(!actor || !token) {
             throw new InvalidUserDataException(
                     "The project properties with auth for GitHub Packages publishing ('liferay.gpr.publishing.actor' and " +
                             "'liferay.gpr.publishing.token') are required when publishing, but were not provided.")
@@ -42,79 +42,76 @@ gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     }
 }
 
-logger.info """[gpr] githubRepoOwner= ${githubRepoOwner} | githubRepoName= ${githubRepoName} | publicationType= ${publicationType} | \
-groupIdTemplate= ${groupIdTemplate} | artifactIdTemplate= ${artifactIdTemplate} | \
-publishSourcesDefault= ${publishSourcesDefault} | publishJavadocDefault= ${publishJavadocDefault}"""
+logger.info """[gpr] githubRepoOwner= ${githubRepoOwner} | githubRepoName= ${githubRepoName} | \
+groupId= ${publishedGroupId} | artifactId= ${publishedArtifactId} | publicationType= ${publicationType} | \
+sourcesPublished= ${sourcesPublished} | javadocPublished= ${javadocPublished}"""
 
-
+@Immutable
 class GprExtension {
-    private final Project moduleProject
-    private final String groupIdTemplate
-    private final String artifactIdTemplate
-
-    GprExtension(Project moduleProject, String groupIdTemplate, String artifactIdTemplate) {
-        this.moduleProject = moduleProject
-        this.groupIdTemplate = groupIdTemplate
-        this.artifactIdTemplate = artifactIdTemplate
-    }
-
-    // The desired custom identity, if it should be different from the 'liferay.gpr.publishing.*' templates
+    // The published identity
     String groupId
     String artifactId
 
-    // what gets published, if custom from the defaults set with 'liferay.gpr.publishing.*'
-    boolean publishSources
-    boolean publishJavadoc
+}
 
-    /**
-     * Returns the groupId which will be used to publish the project where this
-     * extension was created.
-     * @return
-     */
-    String resolveGroupId() {
-        groupId ?: _resolveIdTemplate(groupIdTemplate)
+
+// The extension on each Gradle project, which can be used to read (not write) the publication details of one particular project
+project.extensions.add(GprExtension, 'gpr', new GprExtension(publishedGroupId, publishedArtifactId))
+
+// https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages
+// https://docs.gradle.org/5.6.4/userguide/publishing_maven.html#sec:publishing_custom_artifacts_to_maven
+// https://github.com/nebula-plugins/nebula-publishing-plugin
+
+apply plugin: nebula.plugin.publishing.maven.MavenPublishPlugin
+apply plugin: nebula.plugin.publishing.verification.PublishVerificationPlugin
+
+publishing {
+    // The target Maven repository to publish into
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/${githubRepoOwner}/${githubRepoName}")
+            credentials {
+                username actor
+                password token
+            }
+        }
     }
 
-    String resolveArtifactId() {
-        artifactId ?: _resolveIdTemplate(artifactIdTemplate)
-    }
+    publications {
+        nebula(MavenPublication) {
+            // Set the published identity for the project
+            groupId = publishedGroupId
+            artifactId = publishedArtifactId
 
-    private final String _resolveIdTemplate (String template) {
-        def binding = [
-                rootProjectName: moduleProject.rootProject.name,
-                projectGroup   : moduleProject.group,
-                projectName    : moduleProject.name
-        ]
-        return new groovy.text.SimpleTemplateEngine().createTemplate(template).make(binding).toString()
+            pom {
+                scm {
+                    connection = "scm:git:https://github.com/${githubRepoOwner}/${githubRepoName}.git"
+                    developerConnection = "scm:git:https://github.com/${githubRepoOwner}/${githubRepoName}.git"
+                    url = "https://github.com/${githubRepoOwner}/${githubRepoName}"
+                }
+            }
+        }
     }
 }
 
-// The root one, will depend on the "extra" verification we define for individual subproject;
-// that way, all verifications (on any subproject) will be run first, only then any actual publication
-tasks.register('verifyPublication')
-
-subprojects {
-
-    // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages
-    // https://docs.gradle.org/5.6.4/userguide/publishing_maven.html#sec:publishing_custom_artifacts_to_maven
-    // https://github.com/nebula-plugins/nebula-publishing-plugin
-
-    // The extension on each Gradle project, which can be used to customize the publication of one particular project
-    project.extensions.create('gpr', GprExtension, project, groupIdTemplate, artifactIdTemplate)
-    project.gpr {
-        publishSources = publishSourcesDefault
-        publishJavadoc = publishJavadocDefault
-    }
-
-    if (!project.childProjects) {
-        apply plugin: nebula.plugin.publishing.maven.MavenPublishPlugin
-        apply plugin: nebula.plugin.publishing.verification.PublishVerificationPlugin
-
+if (sourcesPublished) {
+    if (publicationType == 'SNAPSHOT') {
+        logger.info "[gpr] The 'sources' artifact for ${project} won't get published, " +
+                "because of limitation of GitHub Packages repo for SNAPSHOT artifacts."
+    } else {
         apply plugin: nebula.plugin.publishing.publications.SourceJarPlugin
+    }
+}
 
+if (javadocPublished) {
+    if (publicationType == 'SNAPSHOT') {
+        logger.info "[gpr] The 'javadoc' artifact for ${project} won't get published, " +
+                "because of limitation of GitHub Packages repo for SNAPSHOT artifacts."
+    } else {
         // TODO an error is thrown when not using Gradle 6+:
         //  Could not find method withJavadocJar() for arguments [] on object of type org.gradle.api.plugins.internal.DefaultJavaPluginExtension
-        //                apply plugin: nebula.plugin.publishing.publications.JavadocJarPlugin
+        //apply plugin: nebula.plugin.publishing.publications.JavadocJarPlugin
 
         // Use the legacy option to set up the publication of javadoc instead
         project.pluginManager.withPlugin('java') {
@@ -127,178 +124,138 @@ subprojects {
                 artifact javadocJar
             }
         }
+    }
+}
 
-        // The target Maven repository to publish into
-        publishing {
-            repositories {
-                maven {
-                    name = "GitHubPackages"
-                    url = uri("https://maven.pkg.github.com/${githubRepoOwner}/${githubRepoName}")
-                    credentials {
-                        username project.findProperty('liferay.gpr.publishing.actor')
-                        password project.findProperty('liferay.gpr.publishing.token')
-                    }
-                }
-            }
+project.afterEvaluate {
+    // Projects inside "themes" directory might have no "war" plugin applied, so only POM would be published =>
+    // add the WAR built with the use of NPM manually
+    PublishArtifact npmThemeWarArtifact
+
+    if (project.path.startsWith(":themes:") && !project.plugins.hasPlugin(WarPlugin)) {
+        // https://github.com/liferay/liferay-portal/blob/master/modules/sdk/gradle-plugins-workspace/src/main/java/com/liferay/gradle/plugins/workspace/configurators/ThemesProjectConfigurator.java#L236
+        // def warFile = project.file("dist/${project.getConvention().getPlugin(BasePluginConvention).archivesBaseName}.war")
+        def warFile = project.file("dist/${project.name}.war")
+        def builtByTask = 'gulpBuild'
+
+        // We need to create a custom configuration and add the artifact to it
+        project.configurations { liferayThemeWar }
+        npmThemeWarArtifact = project.artifacts.add('liferayThemeWar', warFile) {
+            type 'war'
+            builtBy builtByTask
         }
 
-        project.afterEvaluate {
-            // Projects inside "themes" directory might have no "war" plugin applied, so only POM would be published =>
-            // add the WAR built with the use of NPM manually
-            PublishArtifact npmThemeWarArtifact
+        logger.info "[gpr] ${project} has no WAR plugin applied, created a custom artifact to publish -- " +
+                "from file '${rootProject.relativePath(npmThemeWarArtifact.file)}', built by '${builtByTask}'"
+    }
 
-            if (project.path.startsWith(":themes:") && !project.plugins.hasPlugin(WarPlugin)) {
-                // https://github.com/liferay/liferay-portal/blob/master/modules/sdk/gradle-plugins-workspace/src/main/java/com/liferay/gradle/plugins/workspace/configurators/ThemesProjectConfigurator.java#L236
-                // def warFile = project.file("dist/${project.getConvention().getPlugin(BasePluginConvention).archivesBaseName}.war")
-                def warFile = project.file("dist/${project.name}.war")
-                def builtByTask = 'gulpBuild'
-
-                // We need to create a custom configuration and add the artifact to it
-                project.configurations { liferayThemeWar }
-                npmThemeWarArtifact = project.artifacts.add('liferayThemeWar', warFile) {
-                    type 'war'
-                    builtBy builtByTask
-                }
-
-                logger.info "[gpr] ${project} has no WAR plugin applied, created a custom artifact to publish -- " +
-                        "from file '${rootProject.relativePath(npmThemeWarArtifact.file)}', built by '${builtByTask}'"
-            }
-
-            // The published identity for the project; either the one users provided via 'project.gpr' extension,
-            // or the one based on the templates
-            publishing {
-                publications {
-                    nebula(MavenPublication) {
-                        groupId = project.gpr.resolveGroupId()
-                        artifactId = project.gpr.resolveArtifactId()
-
-                        // Only override the version if taking it from root project, otherwise leave as is ~ based on project
-                        if (versionSource == 'GRADLE_ROOT_PROJECT') {
-                            version = project.rootProject.version
-                        }
-
-                        // add the theme's war built by NPM, if such artifact will be created
-                        // (= this project is a theme and is built by NPM, see above)
-                        if (npmThemeWarArtifact) {
-                            artifact npmThemeWarArtifact
-                        }
-
-                        pom {
-                            scm {
-                                connection = "scm:git:https://github.com/${githubRepoOwner}/${githubRepoName}.git"
-                                developerConnection = "scm:git:https://github.com/${githubRepoOwner}/${githubRepoName}.git"
-                                url = "https://github.com/${githubRepoOwner}/${githubRepoName}"
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (publicationType == 'SNAPSHOT') {
-                // force the -SNAPSHOT version in the pom.xml if publishing a SNAPSHOT
-                publishing.publications.nebula(MavenPublication) { MavenPublication pub ->
-                    if (!pub.version.endsWith('-SNAPSHOT')) {
-                        pub.version "${pub.version}-SNAPSHOT"
-                    }
-                }
-            } else if (publicationType == 'RELEASE') {
-                // nothing for now
-            }
-
-            // once the subproject is evaluated, determine if the -sources and -javadoc
-            // actually should be published, since users can customize this per subproject
-            // via the 'gpr' extension on every project
-            [
-                    'javadoc': project.gpr.publishJavadoc,
-                    'sources': project.gpr.publishSources,
-            ].each { String artifactClassifier, boolean shouldBePublished ->
-                if (!shouldBePublished || publicationType == 'SNAPSHOT') {
-                    publishing.publications.nebula(MavenPublication).artifacts.with { MavenArtifactSet mas ->
-                        mas.remove(mas.find { it.classifier == artifactClassifier })
-                    }
-
-                    if (!shouldBePublished) {
-                        logger.info "[gpr] '${artifactClassifier}' should not be published nased on project.gpr extension => " +
-                                "removed from the list of published artifacts: ${publishing.publications.nebula(MavenPublication).artifacts}"
-                    } else {
-                        logger.info "[gpr] The '${artifactClassifier}' artifact for ${project} won't get published, " +
-                                "because of limitation of GitHub Packages repo for SNAPSHOT artifacts."
-                    }
-                }
-            }
-        }
-
-        // verifyPublication (added by nebula.plugin.publishing.verification.PublishVerificationPlugin)
-        // only applied on Java projects and only during afterEvaluate
-        def verifyPublicationForSubproject = tasks.findByName('verifyPublication')
-
-        if (verifyPublicationForSubproject) {
-            rootProject.tasks.findByName('verifyPublication').configure {
-                dependsOn verifyPublicationForSubproject
-            }
-        }
-
-        def verifyPublishingTypeMatchesVersion = tasks.register('verifyPublishingTypeMatchesVersion') {
-            doLast {
-                assert !(publicationType == 'RELEASE' && publishing.publications.nebula(MavenPublication).version.endsWith('-SNAPSHOT'))
-            }
-        }
-
-        def verifyNotAlreadyPublishedToRemoteRepo = tasks.register('verifyNotAlreadyPublishedToRemoteRepo') {
-            def targetRepoName = 'GitHubPackages'
-
-            doLast {
-                String groupId = publishing.publications.nebula.groupId
-                String artifactId = publishing.publications.nebula.artifactId
-                String version = publishing.publications.nebula.version
-                String extension = publishing.publications.nebula.pom.packaging
-
-                if (!version.endsWith('-SNAPSHOT')) {
-                    publishing.repositories.getByName(targetRepoName).with { MavenArtifactRepository mar ->
-                        def primaryArtifactUrl =
-                                "${mar.url}/${groupId.replace('.', '/')}/${artifactId}/${version}/${artifactId}-${version}.${extension}"
-
-                        println "[gpr] TODO need to check the response for this URL: ${primaryArtifactUrl}"
-
-                        // TODO implement fetching the URL, need to pass credetials in the HTTP request as well
-                        // 200 => already published
-                        // 404 => not published
-                    }
-                } else {
-                    logger.info "[gpr] A SNAPSHOT artifact will be published, assuming these can always be re-published."
-                }
-            }
-        }
-
-        def checkNoSnapshotDependenciesUsed = tasks.register('checkNoSnapshotDependenciesUsed') {
-            doLast {
-                String version = publishing.publications.nebula.version
-
-                if (!version.endsWith('-SNAPSHOT')) {
-                    def dependenciesWithSnapshotVersionByConfiguration =
-                            configurations.collectEntries() { Configuration c ->
-                                [ c, c.allDependencies.findAll { Dependency  d -> (d.version ?: '').endsWith('-SNAPSHOT') } ]
-                            }.findAll {
-                                Configuration c, Set<Dependency> directDependenciesHavingSnapshotVersion ->
-                                    !directDependenciesHavingSnapshotVersion.isEmpty()
-                            }
-
-                    if (!dependenciesWithSnapshotVersionByConfiguration.isEmpty()) {
-                        throw new InvalidUserDataException(
-                                "The module ${project} is about to be published with final version '${version}' while " +
-                                "using one or more -SNAPSHOT dependencies. Please make all dependencies final first. " +
-                                "Configurations and their offending dependencies: ${dependenciesWithSnapshotVersionByConfiguration}")
-                    }
-                } else {
-                    logger.info "[gpr] A SNAPSHOT artifact will be published, assuming these can have SNAPSHOTs as dependencies."
-                }
-            }
-        }
-
-        tasks.findByPath(':verifyPublication').configure {
-            dependsOn verifyPublishingTypeMatchesVersion
-            dependsOn checkNoSnapshotDependenciesUsed
-            dependsOn verifyNotAlreadyPublishedToRemoteRepo
+    publishing.publications.nebula(MavenPublication) {
+        // add the theme's war built by NPM, if such artifact will be created
+        // (= this project is a theme and is built by NPM, see above)
+        if (npmThemeWarArtifact) {
+            artifact npmThemeWarArtifact
         }
     }
+}
+
+// Override the version being published. Only do this in afterEvaluate{}
+project.afterEvaluate {
+    publishing.publications.nebula(MavenPublication) {
+        // Only override the version if taking it from root project, otherwise leave as is ~ based on project
+        if (versionSource == 'GRADLE_ROOT_PROJECT') {
+            version = project.rootProject.version
+        }
+    }
+
+    if (publicationType == 'SNAPSHOT') {
+        // force the -SNAPSHOT version in the pom.xml if publishing a SNAPSHOT
+        publishing.publications.nebula(MavenPublication) { MavenPublication pub ->
+            if (!pub.version.endsWith('-SNAPSHOT')) {
+                pub.version "${pub.version}-SNAPSHOT"
+            }
+        }
+    } else if (publicationType == 'RELEASE') {
+        // nothing for now
+    }
+}
+
+// The verification task in root, will depend on the "extra" verification we define for individual subproject;
+// that way, all verifications (on any subproject) will be run first, only then any actual publication
+if (!project.rootProject.tasks.findByName('verifyPublication')) {
+    project.rootProject.tasks.register('verifyPublication')
+}
+
+// verifyPublication (added by nebula.plugin.publishing.verification.PublishVerificationPlugin)
+// only applied on Java projects and only during afterEvaluate
+project.afterEvaluate {
+    def verifyPublicationForSubproject = project.tasks.findByName('verifyPublication')
+
+    if (verifyPublicationForSubproject) {
+        rootProject.tasks.findByName('verifyPublication').configure {
+            dependsOn verifyPublicationForSubproject
+        }
+    }
+}
+
+def verifyPublishingTypeMatchesVersion = tasks.register('verifyPublishingTypeMatchesVersion') {
+    doLast {
+        assert !(publicationType == 'RELEASE' && publishing.publications.nebula(MavenPublication).version.endsWith('-SNAPSHOT'))
+    }
+}
+
+def verifyNotAlreadyPublishedToRemoteRepo = tasks.register('verifyNotAlreadyPublishedToRemoteRepo') {
+    def targetRepoName = 'GitHubPackages'
+
+    doLast {
+        String groupId = publishing.publications.nebula.groupId
+        String artifactId = publishing.publications.nebula.artifactId
+        String version = publishing.publications.nebula.version
+        String extension = publishing.publications.nebula.pom.packaging
+
+        if (!version.endsWith('-SNAPSHOT')) {
+            publishing.repositories.getByName(targetRepoName).with { MavenArtifactRepository mar ->
+                def primaryArtifactUrl =
+                        "${mar.url}/${groupId.replace('.', '/')}/${atifactId}/${version}/${artifactId}-${version}.${extension}"
+
+                println "[gpr] TODO need to check the response for this URL: ${primaryArtifactUrl}"
+
+                // TODO implement fetching the URL, need to pass credetials in the HTTP request as well
+                // 200 => already published
+                // 404 => not published
+            }
+        } else {
+            logger.info "[gpr] A SNAPSHOT artifact will be published, assuming these can always be re-published."
+        }
+    }
+}
+
+def checkNoSnapshotDependenciesUsed = tasks.register('checkNoSnapshotDependenciesUsed') {
+    doLast {
+        String version = publishing.publications.nebula.version
+
+        if (!version.endsWith('-SNAPSHOT')) {
+            def dependenciesWithSnapshotVersionByConfiguration =
+                    configurations.collectEntries() { Configuration c ->
+                        [ c, c.allDependencies.findAll { Dependency  d -> (d.version ?: '').endsWith('-SNAPSHOT') } ]
+                    }.findAll {
+                        Configuration c, Set<Dependency> directDependenciesHavingSnapshotVersion ->
+                            !directDependenciesHavingSnapshotVersion.isEmpty()
+                    }
+
+            if (!dependenciesWithSnapshotVersionByConfiguration.isEmpty()) {
+                throw new InvalidUserDataException(
+                        "The module ${project} is about to be published with final version '${version}' while " +
+                        "using one or more -SNAPSHOT dependencies. Please make all dependencies final first. " +
+                        "Configurations and their offending dependencies: ${dependenciesWithSnapshotVersionByConfiguration}")
+            }
+        } else {
+            logger.info "[gpr] A SNAPSHOT artifact will be published, assuming these can have SNAPSHOTs as dependencies."
+        }
+    }
+}
+
+project.rootProject.tasks.findByName('verifyPublication').configure {
+    dependsOn verifyPublishingTypeMatchesVersion
+    dependsOn checkNoSnapshotDependenciesUsed
+    dependsOn verifyNotAlreadyPublishedToRemoteRepo
 }

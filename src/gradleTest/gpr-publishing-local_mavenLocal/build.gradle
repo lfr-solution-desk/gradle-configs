@@ -1,9 +1,15 @@
 // invoke this test with some special arguments for the build
 project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
-project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.liferay.soldesk.gradle-configs-gradleTest-mavenLocal'
+project.ext['liferay.gpr.publishing.groupid' ] = 'com.liferay.soldesk.gradle-configs-gradleTest-mavenLocal'
 
 // Apply the plugin - a local script file
-apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+subprojects {
+    if (!childProjects) {
+        if (project.name != 'form-api-3') {
+            apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+        }
+    }
+}
 
 
 task runGradleTest {
@@ -33,9 +39,9 @@ task runGradleTest {
         assert project.file('modules/forms/form-api-2/build/libs/').listFiles().find { it.name.endsWith('-javadoc.jar') } == null
 
         // TODO implement a way to exclude a module from publishing
-//        // Should not be published at all
-//        assert !project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
-//        assert project.file('modules/forms/form-api-3/build/libs/').listFiles().find { it.name.endsWith('.jar') } == null
+        // Should not be published at all
+        assert !project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
+        assert project.file('modules/forms/form-api-3/build/libs/').listFiles().find { it.name.endsWith('.jar') } == null
 
     }
 }

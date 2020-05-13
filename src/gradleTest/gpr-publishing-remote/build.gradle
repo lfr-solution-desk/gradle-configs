@@ -10,7 +10,11 @@ project.ext['liferay.gpr.publishing.repo.name' ] = 'gradle-configs'
 project.ext['liferay.gpr.publishing.type' ] = 'SNAPSHOT'
 
 // Apply the plugin - a local script file
-apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+subprojects {
+    if (!childProjects) {
+        apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+    }
+}
 
 
 task runGradleTest {

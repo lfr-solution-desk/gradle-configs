@@ -4,8 +4,7 @@ project.ext['liferay.gpr.publishing.repo.name' ] = 'repo-BBB'
 
 project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
 
-project.ext['liferay.gpr.publishing.groupid.template' ] = 'com.example.nnn.xxx'
-project.ext['liferay.gpr.publishing.artifactid.template' ] = 'com2.example2.nnn2.${projectName}'
+project.ext['liferay.gpr.publishing.groupid' ] = 'com.example.nnn.xxx'
 project.ext['liferay.gpr.publishing.version.source' ] = 'GRADLE_PROJECT'
 project.ext['liferay.gpr.publishing.sources.published' ] = 'false'
 project.ext['liferay.gpr.publishing.javadoc.published' ] = 'false'
@@ -16,7 +15,13 @@ allprojects {
 }
 
 // Apply the plugin - a local script file
-apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+subprojects {
+    if (!childProjects) {
+        project.ext['liferay.gpr.publishing.artifactid' ] = "com2.example2.nnn2.${project.name}"
+
+        apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+    }
+}
 
 
 task runGradleTest {

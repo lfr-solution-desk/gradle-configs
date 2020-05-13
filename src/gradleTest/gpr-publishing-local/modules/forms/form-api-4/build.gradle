@@ -7,7 +7,7 @@ dependencies {
 
 version = '3.2.3'
 
-project.gpr {
-    groupId = 'XXX'
-    artifactId = 'YYY'
+publishing.publications.nebula(MavenPublication) {
+    groupId 'XXX'
+    artifactId 'YYY'
 }

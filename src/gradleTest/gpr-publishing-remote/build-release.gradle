@@ -15,8 +15,11 @@ project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
 rootProject.version = "1.${project.findProperty('GITHUB_RUN_NUMBER')}.${Instant.now().toEpochMilli()}"
 
 // Apply the plugin - a local script file
-apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
-
+subprojects {
+    if (!childProjects) {
+        apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-publishing.gradle"
+    }
+}
 
 task runGradleTest {
     doLast {

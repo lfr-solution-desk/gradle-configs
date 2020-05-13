@@ -4,6 +4,3 @@ dependencies {
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel"
 	compileOnly group: "org.osgi", name: "org.osgi.core"
 }
-
-project.gpr.publishSources = false
-project.gpr.publishJavadoc = false
