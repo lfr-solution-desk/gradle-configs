@@ -31,20 +31,6 @@ assert versionSource in [ 'GRADLE_ROOT_PROJECT', 'GRADLE_PROJECT' ], "Please use
 final boolean publishSourcesDefault = (project.findProperty('liferay.gpr.publishing.sources.published') ?: 'true').toString().toBoolean()
 final boolean publishJavadocDefault = (project.findProperty('liferay.gpr.publishing.javadoc.published') ?: 'true').toString().toBoolean()
 
-
-final def resolveIdTemplate = { String template, Project moduleProject ->
-    def binding = [
-            rootProjectName: moduleProject.rootProject.name,
-            projectGroup   : moduleProject.group,
-            projectName    : moduleProject.name
-    ]
-    return new groovy.text.SimpleTemplateEngine().createTemplate(template).make(binding).toString()
-}
-
-final def resolveGroupIdTemplate = resolveIdTemplate.curry(groupIdTemplate)
-final def resolveArtifactIdTemplate = resolveIdTemplate.curry(artifactIdTemplate)
-
-
 gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
     // Make the GPR auth properties mandatory, since credentials for GPR will always be required when publishing
     if(tg.allTasks.find { it.name == 'publishNebulaPublicationToGitHubPackagesRepository' }) {
@@ -62,13 +48,45 @@ publishSourcesDefault= ${publishSourcesDefault} | publishJavadocDefault= ${publi
 
 
 class GprExtension {
+    private final Project moduleProject
+    private final String groupIdTemplate
+    private final String artifactIdTemplate
+
+    GprExtension(Project moduleProject, String groupIdTemplate, String artifactIdTemplate) {
+        this.moduleProject = moduleProject
+        this.groupIdTemplate = groupIdTemplate
+        this.artifactIdTemplate = artifactIdTemplate
+    }
+
     // The desired custom identity, if it should be different from the 'liferay.gpr.publishing.*' templates
     String groupId
     String artifactId
 
-    // what gets published, if custom
+    // what gets published, if custom from the defaults set with 'liferay.gpr.publishing.*'
     boolean publishSources
     boolean publishJavadoc
+
+    /**
+     * Returns the groupId which will be used to publish the project where this
+     * extension was created.
+     * @return
+     */
+    String resolveGroupId() {
+        groupId ?: _resolveIdTemplate(groupIdTemplate)
+    }
+
+    String resolveArtifactId() {
+        artifactId ?: _resolveIdTemplate(artifactIdTemplate)
+    }
+
+    private final String _resolveIdTemplate (String template) {
+        def binding = [
+                rootProjectName: moduleProject.rootProject.name,
+                projectGroup   : moduleProject.group,
+                projectName    : moduleProject.name
+        ]
+        return new groovy.text.SimpleTemplateEngine().createTemplate(template).make(binding).toString()
+    }
 }
 
 // The root one, will depend on the "extra" verification we define for individual subproject;
@@ -82,7 +100,7 @@ subprojects {
     // https://github.com/nebula-plugins/nebula-publishing-plugin
 
     // The extension on each Gradle project, which can be used to customize the publication of one particular project
-    project.extensions.create('gpr', GprExtension)
+    project.extensions.create('gpr', GprExtension, project, groupIdTemplate, artifactIdTemplate)
     project.gpr {
         publishSources = publishSourcesDefault
         publishJavadoc = publishJavadocDefault
@@ -151,8 +169,8 @@ subprojects {
             publishing {
                 publications {
                     nebula(MavenPublication) {
-                        groupId = project.gpr.groupId ?: resolveGroupIdTemplate(project)
-                        artifactId = project.gpr.artifactId ?: resolveArtifactIdTemplate(project)
+                        groupId = project.gpr.resolveGroupId()
+                        artifactId = project.gpr.resolveArtifactId()
 
                         // Only override the version if taking it from root project, otherwise leave as is ~ based on project
                         if (versionSource == 'GRADLE_ROOT_PROJECT') {
