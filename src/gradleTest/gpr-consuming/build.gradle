@@ -1,7 +1,13 @@
+// Test that the Properties plugin be applied with Plugins DSL here (in the main build file) +
+// from inside our config being applied below as well
+plugins {
+    id "net.saliman.properties" version "1.4.6"
+}
+
+
 project.ext['liferay.gpr.consuming.repos.names'] = 'static-repo-1, static-repo-2, f-another-static-feature-repo'
 
-project.ext['liferay.gpr.consuming.actor'] = 'some_user'
-project.ext['liferay.gpr.consuming.token'] = 'iuwerj2@$%adfaf44'
+// for auth, gradle-local.properties is used
 
 // Apply the plugin - a local script file
 apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-consuming.gradle"
