@@ -49,18 +49,13 @@ publishSourcesDefault= ${publishSourcesDefault} | publishJavadocDefault= ${publi
 
 class GprExtension {
     private final Project moduleProject
-    final String publicationType
-    final String groupIdTemplate
-    final String artifactIdTemplate
-    final String versionSource
+    private final String groupIdTemplate
+    private final String artifactIdTemplate
 
-    GprExtension(Project moduleProject, String publicationType, String groupIdTemplate,
-                 String artifactIdTemplate, String versionSource) {
+    GprExtension(Project moduleProject, String groupIdTemplate, String artifactIdTemplate) {
         this.moduleProject = moduleProject
-        this.publicationType = publicationType
         this.groupIdTemplate = groupIdTemplate
         this.artifactIdTemplate = artifactIdTemplate
-        this.versionSource = versionSource
     }
 
     // The desired custom identity, if it should be different from the 'liferay.gpr.publishing.*' templates
@@ -72,51 +67,18 @@ class GprExtension {
     boolean publishJavadoc
 
     /**
-     * Returns the effective "groupId" which will be used to publish the project
-     * where this extension was created.
+     * Returns the groupId which will be used to publish the project where this
+     * extension was created.
      * @return
      */
     String resolveGroupId() {
         groupId ?: _resolveIdTemplate(groupIdTemplate)
     }
 
-    /**
-     * Returns the effective "artifactId" which will be used to publish the project
-     * where this extension was created.
-     * @return
-     */
     String resolveArtifactId() {
         artifactId ?: _resolveIdTemplate(artifactIdTemplate)
     }
 
-    /**
-     * Returns the effective "version" which will be used to publish the project
-     * where this extension was created.
-     * @return
-     */
-    String resolveVersion() {
-        // The logic on how the version in pom.xml is determined
-        // The algorithm is duplicated on purpose (this method is not called inside this script)
-
-        String version = moduleProject.version()
-
-        // Only override the version if taking it from root project, otherwise leave as is ~ based on project
-        if (versionSource == 'GRADLE_ROOT_PROJECT') {
-            version = moduleProject.rootProject.version
-        }
-        if (publicationType == 'SNAPSHOT' && !version.toString().endsWith('-SNAPSHOT')) {
-            version = "${version}-SNAPSHOT"
-        }
-
-        return version
-    }
-
-    /**
-     * Evaluates given templates, agaisnt the context project in this extension object,
-     * using the supported binding variables for "groupId" and "artifactId" templates.
-     * @param template
-     * @return
-     */
     private final String _resolveIdTemplate (String template) {
         def binding = [
                 rootProjectName: moduleProject.rootProject.name,
@@ -138,7 +100,7 @@ subprojects {
     // https://github.com/nebula-plugins/nebula-publishing-plugin
 
     // The extension on each Gradle project, which can be used to customize the publication of one particular project
-    project.extensions.create('gpr', GprExtension, project, publicationType, groupIdTemplate, artifactIdTemplate, versionSource)
+    project.extensions.create('gpr', GprExtension, project, groupIdTemplate, artifactIdTemplate)
     project.gpr {
         publishSources = publishSourcesDefault
         publishJavadoc = publishJavadocDefault
