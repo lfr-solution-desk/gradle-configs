@@ -13,7 +13,8 @@ allprojects {
 }
 
 task runGradleTest {
-    dependsOn clean, ':modules:forms:form-api:verifyPublication'
+    // invoke our custom task + the one added by the Nebula plugin
+    dependsOn clean, ':modules:forms:form-api:verifyPublicationExtra', ':modules:forms:form-api:verifyPublication'
 
     doLast {
         // this is actually a valid build

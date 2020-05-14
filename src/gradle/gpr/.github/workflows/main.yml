@@ -38,6 +38,13 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -x
+
+          # run the verification tasks serparately, to make sure nothing gets
+          # published (no subprojects) if there is one or more which would not be
+          # able to be published
+          ./gradlew verifyPublication verifyPublicationExtra
+
           ./gradlew publish \
               -x check \
               -Pliferay.gpr.publishing.actor=${GITHUB_ACTOR} \

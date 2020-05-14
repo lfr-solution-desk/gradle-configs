@@ -23,10 +23,10 @@ jobs:
         run: |
           set -x
 
-          # run the verification task serparately, to make sure nothing gets
+          # run the verification tasks serparately, to make sure nothing gets
           # published (no subprojects) if there is one or more which would not be
           # able to be published
-          ./gradlew verifyPublication
+          ./gradlew verifyPublication verifyPublicationExtra
 
           ./gradlew publish \
               -Pliferay.gpr.publishing.actor=${GITHUB_ACTOR} \
