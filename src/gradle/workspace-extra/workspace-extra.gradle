@@ -1,0 +1,45 @@
+// This config adds some nice features missing in the Liferay Workspace plugin
+
+assert project == project.rootProject, "This config can only be applied on the root project"
+
+// Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
+// use the file to set up their Liferay Workspace plugin (applied in settings.properties)
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath group: "net.saliman", name: "gradle-properties-plugin", version: "1.4.6" }
+}
+apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
+
+
+// Make sure we can use the classes from the Download plugin, like the Verify below
+buildscript {
+    repositories { jcenter() }
+    dependencies { classpath group: "de.undercouch", name: "gradle-download-task", version: "4.0.4" }
+}
+apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
+
+[
+        'SHA-256': 'liferay.workspace.bundle.checksum[sha-256]',
+        'MD5': 'liferay.workspace.bundle.checksum[md5]',
+].each { checksumAlgorithm, expectedSumPropName ->
+    // Verify checksum using given algorithm, if the project property with expected checksum is provided
+
+    if (findProperty(expectedSumPropName)) {
+        def bundleFileName = gradle.liferayWorkspace.bundleUrl.substring(gradle.liferayWorkspace.bundleUrl.lastIndexOf('/') + 1)
+
+        def verifyBundle = tasks.register("verifyBundle${checksumAlgorithm}", Verify) {
+            src new File(gradle.liferayWorkspace.bundleCacheDir, bundleFileName)
+            algorithm checksumAlgorithm
+            checksum findProperty(expectedSumPropName)
+
+            doFirst {
+                logger.info "[workspace-extra] Verifying checksum of the used bundle file '${src}', as found in the bundleCacheDir"
+            }
+        }
+
+        tasks.findByName('downloadBundle').configure {
+            finalizedBy verifyBundle
+        }
+    }
+
+}
