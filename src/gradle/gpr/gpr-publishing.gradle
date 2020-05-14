@@ -202,13 +202,13 @@ def verifyNotAlreadyPublishedToRemoteRepo = tasks.register('verifyNotAlreadyPubl
         if (!version.endsWith('-SNAPSHOT')) {
             publishing.repositories.getByName(targetRepoName).with { MavenArtifactRepository mar ->
                 def primaryArtifactUrl =
-                        "${mar.url}/${groupId.replace('.', '/')}/${atifactId}/${version}/${artifactId}-${version}.${extension}"
+                        "${mar.url}/${groupId.replace('.', '/')}/${artifactId}/${version}/${artifactId}-${version}.${extension}"
 
                 println "[gpr] TODO need to check the response for this URL: ${primaryArtifactUrl}"
 
-                // TODO implement fetching the URL, need to pass credetials in the HTTP request as well
-                // 200 => already published
-                // 404 => not published
+                // TODO implement fetching the URL, need to pass credentials in the HTTP request as well
+                // 200 => already published => fail
+                // 404 => not published => succeed
             }
         } else {
             logger.info "[gpr] ${project}: A SNAPSHOT artifact will be published, assuming these can always be re-published."
