@@ -1,15 +1,6 @@
 // Applying this script in your root Gradle build file for Liferay Workspace will allow you
 // to use the artifacts published from 'lfr-solution-desk' repositories as dependencies
 
-// Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
-// use the file to set up their Liferay Workspace plugin (applied in settings.properties)
-buildscript {
-    repositories { mavenCentral() }
-    dependencies { classpath group: "net.saliman", name: "gradle-properties-plugin", version: "1.4.6" }
-}
-apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
-
-
 String githubReposOwner = project.findProperty('liferay.gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
 
 boolean inferringEnabled =

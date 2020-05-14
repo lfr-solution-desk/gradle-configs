@@ -3,7 +3,9 @@ project.ext['liferay.gpr.consuming.repos.names'] = 'static-repo-1, static-repo-2
 // customize the prefix to test out we can use another
 project.ext['liferay.gpr.consuming.repos.inferring.dependency.groupid.prefix'] = 'com.example.aaa.'
 
-// for auth, gradle-local.properties is used
+project.ext['liferay.gpr.consuming.actor'] = 'some_user'
+project.ext['liferay.gpr.consuming.token'] = 'iuwerj2@$%adfaf44'
+
 
 // traditional
 dependencies {
