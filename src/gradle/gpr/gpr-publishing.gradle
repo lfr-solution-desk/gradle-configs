@@ -197,18 +197,17 @@ def verifyNotAlreadyPublishedToRemoteRepo = tasks.register('verifyNotAlreadyPubl
         String groupId = publishing.publications.nebula.groupId
         String artifactId = publishing.publications.nebula.artifactId
         String version = publishing.publications.nebula.version
-        String extension = publishing.publications.nebula.pom.packaging
 
         if (!version.endsWith('-SNAPSHOT')) {
             publishing.repositories.getByName(targetRepoName).with { MavenArtifactRepository mar ->
                 def primaryArtifactUrl =
-                        "${mar.url}/${groupId.replace('.', '/')}/${artifactId}/${version}/${artifactId}-${version}.${extension}"
-
-                println "[gpr] TODO need to check the response for this URL: ${primaryArtifactUrl}"
+                        "${mar.url}/${groupId.replace('.', '/')}/${artifactId}/${version}/${artifactId}-${version}.pom}"
 
                 // TODO implement fetching the URL, need to pass credentials in the HTTP request as well
                 // 200 => already published => fail
                 // 404 => not published => succeed
+
+                println "[gpr] TODO need to check the response for this URL: ${primaryArtifactUrl}"
             }
         } else {
             logger.info "[gpr] ${project}: A SNAPSHOT artifact will be published, assuming these can always be re-published."
