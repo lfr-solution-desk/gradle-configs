@@ -1,8 +1,8 @@
-import groovy.transform.Immutable
-
 // The minimal configuration to get all the Gradle modules publishes in GitHub Packages repository
 // (as Maven artifacts), defaulting to using Solution Desk GitHub organization as the target of the packages.
 // The to be applied from Liferay Workspace -> build.gradle
+
+assert project != project.rootProject, "This config cannot be applied on the root project, only subprojects of the Liferay Workspace Gradle build"
 
 // For documentation of the input properties, see 'src/gradle/gpr/gradle.properties'
 
@@ -31,7 +31,7 @@ final boolean javadocPublished = (project.findProperty('liferay.gpr.publishing.j
 final String actor = project.findProperty('liferay.gpr.publishing.actor')
 final String token = project.findProperty('liferay.gpr.publishing.token')
 
-@Immutable
+@groovy.transform.Immutable
 class GprExtension {
     // The published identity
     String groupId

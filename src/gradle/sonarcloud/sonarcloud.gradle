@@ -1,13 +1,9 @@
+assert project == project.rootProject, "This config can only be applied on the root project"
+
 // We cannot use the plugins DSL, since we are inside a script plugin
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
-    }
+    repositories { mavenCentral() }
+    dependencies { classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8" }
 }
 
 boolean analyzeJavaModulesResources =
