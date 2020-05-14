@@ -4,24 +4,24 @@ These two configs cover using with GitHub Packages being used as a Maven repo fo
 
 ## gpr-publishing.gradle
 
-This config should be applied to every project in your Liferay Worskpace which wants its custom modules to be shared, be it modules, themes or wars, as Maven artifacts uploaded to the Maven repository hosted by GitHub for every source code repository.
+This config can be used in Liferay Worskpace when there is a need to share custom modules (be it modules, themes or wars), as Maven artifacts uploaded to the Maven repository hosted by GitHub. These artifacts can then be consumed as standard Maven dependencies in other repositories.
  
 ## Default behavior
 
 Apply the config only to the projects you want to publish. You can use various Gradle constructs to do this, for example from `[root]/build.gradle`:
 ```
 subprojects {
-    if (!childProjects) {                     
-        if (!project.name.contains("-test") {
-            "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v0.3/src/gradle/gpr/gpr-publishing.gradle"
-        }
+    if (!childProjects) {
+        apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v0.3/src/gradle/gpr/gpr-publishing.gradle"
     }
 }
 ```
 
-If you only want to publish a subset of your projects in Gradle, filter the undesirable projects out -- simply don't apply the config to the undesirable projects.
+If you only want to publish a subset of your projects in Gradle, filter the undesirable projects out -- simply don't apply the config to the undesirable projects. For exmaple, use: `if (!project.name.contains("-test") { ... }` etc.
 
-**Note**: If you apply the config to a non-leaf project in a typical Liferay Workspace, a POM-only will be published for the project, so make sure to check using something like `!childProjects` before applying.
+**Note**: If you apply the config to a non-leaf project in a typical Liferay Workspace, a POM-only will be published for the project. If that's undesirable (which it most likely is), make sure to check using a condition like `!childProjects` before applying the config on a project.
+
+**Note**: `apply from: ...` in Gradle (since 4.2) caches the response of URL, so it won't be fetched multiple times within single build. Also, when using `--offline`, locally cached version will be used, if available.
 
 The default behaviour is following (suited for Solution Desk repositories):
 * common `groupId` (`com.liferay.soldesk.<repo-name>`) used for all published modules, 
@@ -53,13 +53,15 @@ You can easily convert these into e.g. a `Jenkinsfile` if you want, it's only a 
  
 ## gpr-consuming.gradle
 
-This config should be applied on the root project of your Liferay Workspace:
+This config should be applied on the `rootProject` of your Liferay Workspace:
 ```
-// build.gradle
+// [root]/build.gradle
 apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v0.3/gpr/gpr-consuming.gradle"
 ```                                                                         
 
-On every project in the build, including the root project itself (`allprojects { ... }`), it adds the Maven repositories pointing to GitHub Packages repos being used by the declared dependencies of every configuration, so that they can be fetched. 
+On every project in the build, including the root project itself (`allprojects { ... }`), it adds the Maven repositories pointing to GitHub Packages repos being used by the declared dependencies of every configuration, so that they can be fetched.
+
+Since only the first-level dependencies can be inspected (no transitional ones will be seen, since that would require reslving, which needs the repos already configured), additional repositories can be setup manually using configuration -- by passing the named of the GitHub repositories from where the needed artifacts were published. Check `liferay.gpr.consuming.repos.names` in [gradle.properties](gradle.properties). 
 
 ### Supported configuration properties
 
