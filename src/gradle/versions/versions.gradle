@@ -1,6 +1,8 @@
 // Applying this script in your root Gradle build file for Liferay Workspace will allow you
 // to use the conventions for versions of the built artifacts
 
+assert false, "This config was deprecated and should not be used."
+
 // Inspired by:
 //      https://bmuschko.com/blog/gradle-release-strategy/
 //      https://github.com/nemerosa/versioning
