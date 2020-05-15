@@ -41,5 +41,4 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
             finalizedBy verifyBundle
         }
     }
-
 }
