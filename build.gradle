@@ -37,8 +37,6 @@ gradleTest.configure {
 
     expectFailure ~/gpr-publishing-local_release-checks/
 
-    expectFailure ~/sonarcloud-noAuthToken/
-
     if (System.getProperty('gradleTest.environment') == 'ci') {
         gradleArguments "--project-prop", "liferay.gpr.publishing.actor=${System.getProperty('GITHUB_ACTOR')}"
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=${System.getProperty('GITHUB_TOKEN')}"
@@ -51,7 +49,7 @@ gradleTest.configure {
         expectFailure ~/gpr-publishing-remote/
 
         gradleArguments "-Dsonar.login=aasdf345IUERW"
-        expectFailure ~/sonarcloud-push/
+        expectFailure ~/sonar-push/
     }
 
     beforeTest {
