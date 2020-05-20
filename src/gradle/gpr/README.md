@@ -51,6 +51,14 @@ Publishing should really be done in CI, where every aspect of the runtime enviro
 
 You can easily convert these into e.g. a `Jenkinsfile` if you want, it's only a matter of invoking the Gradle build on certain events occurring in the repository and passing some GitHub credentials (with "packages:write") to the build.  
  
+## Detected artifacts for publishing
+
+The Gradle config is applied on individual Gradle projects, one by one – on these which should be published. So anywhere the config is applied, it will try to gather the artifacts for publishing and publish them when asked to. 
+
+As long as the custom project is correctly created in Gradle (e.g. "java" plugin or "war" plugin is applied), the artifacts will be picked up as expected -- the "main" .jar or "main" .war. Support to publish the themes inside the "themes/" directory, built by NPM, was added to the config manually -- when no "war" plugin is detected on a theme project, it's assumed it's built by NPM and a .war will be created by `gulpBuild` task in `dist/${project.name}.war`.
+
+If no artifact can be picked up, the config will just publish the pom.xml for given Gradle project (`packaging` == `pom`). In such case, any custom artifact that should be pubslihed can be added to our publication (named `nebula`), as described in (the Gradle docs)[https://docs.gradle.org/current/userguide/publishing_customization.html#sec:publishing_custom_artifacts_to_maven].
+ 
 ## gpr-consuming.gradle
 
 This config should be applied on the `rootProject` of your Liferay Workspace:
@@ -61,7 +69,7 @@ apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/
 
 On every project in the build, including the root project itself (`allprojects { ... }`), it adds the Maven repositories pointing to GitHub Packages repos being used by the declared dependencies of every configuration, so that they can be fetched.
 
-Since only the first-level dependencies can be inspected (no transitional ones will be seen, since that would require reslving, which needs the repos already configured), additional repositories can be setup manually using configuration -- by passing the named of the GitHub repositories from where the needed artifacts were published. Check `liferay.gpr.consuming.repos.names` in [gradle.properties](gradle.properties). 
+Since only the first-level dependencies can be inspected (no transitional ones will be seen, since that would require resolving, which needs the repos already configured), additional repositories can be setup manually using configuration -- by passing the named of the GitHub repositories from where the needed artifacts were published. Check `liferay.gpr.consuming.repos.names` in [gradle.properties](gradle.properties). 
 
 ### Supported configuration properties
 
