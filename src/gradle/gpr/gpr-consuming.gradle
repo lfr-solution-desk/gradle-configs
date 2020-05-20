@@ -1,4 +1,4 @@
-// Applying this script in your root Gradle build file for Liferay Workspace will allow you
+// Applying this script in your Gradle rootProject (Liferay Workspace) will allow you
 // to use the artifacts published from 'lfr-solution-desk' repositories as dependencies
 
 assert project == project.rootProject, "This config can only be applied on the root project"
@@ -25,7 +25,7 @@ def _findCredentialsValue = { Project contextProject, String projectPropName, St
             (value.length() > 15 ? value.substring(0, 4) : '') + '***' :
             value
 
-    logger.info "[gpr] Read GitHuB credentials value: ${maskedValue} " +
+    logger.info "[gpr] Read GitHub credentials value: ${maskedValue} " +
             "(first tried project prop named '${projectPropName}', then System prop named '${systemPropName}')"
 
     return value
@@ -34,7 +34,7 @@ def _findCredentialsValue = { Project contextProject, String projectPropName, St
 def githubUsername = _findCredentialsValue("liferay.gpr.consuming.actor", "GITHUB_ACTOR", false)
 def githubPassword = _findCredentialsValue("liferay.gpr.consuming.token", "GITHUB_TOKEN", true)
 
-// Approach 1 - inspect dependencies, declare repositories based on them
+// Approach 1 - inspect dependencies, declare repositories based on them, allow static ones to be added on top (or instead)
 // pros - only the ones are declared
 // cons - cannot handle transitive dependencies, so if an artifacts declared dependency on another from different (soldesk) repo,
 //          we will never be able to add a repo for it
@@ -45,16 +45,17 @@ allprojects {
         
         if (inferringEnabled) {
             // The inferring of repos needed from declared dependencies works as follows:
-            //  1. read all dependencies from all configurations (unresolved, just the way declared),
-            //  2. find these with Maven "group" like "com.liferay.soldesk.NNN.*",
+            //  1. read all dependencies from all configurations (unresolved, just the way they are declared in Gradle build files),
+            //  2. find these with Maven "group" like "com.liferay.soldesk.NNN*",
             //  3. return the NNN part ~ name of the GPR repo where the artifact was published
 
             inferredGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
                 d.group && d.group.startsWith(inferringDependencyGroupIdPrefix)
             }.collect { Dependency d ->
+                // Get the next part of the groupId, between two ".". It might not be the last part, so match "up to the next period, if any"
                 def repoName = d.group.replaceAll(/${java.util.regex.Pattern.quote(inferringDependencyGroupIdPrefix)}([^\.]+).*/, '$1')
 
-                logger.info "[gpr] Found dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
+                logger.info "[gpr] Found matching dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
 
                 return repoName
             }.unique()
@@ -63,9 +64,9 @@ allprojects {
         }
 
         logger.info """\
-            [gpr] Adding following GitHub repositories owned by '${githubReposOwner}' as Maven repositories for fetching dependencies, using GitHub Packages conventions:
-            [gpr] * configured (liferay.gpr.consuming.repos.names): ${staticGithubReposNames}
-            [gpr] * inferred based on dependencies used: ${inferredGithubReposNames}\
+            [gpr] Adding following GitHub repositories as Maven repositories for fetching dependencies, using GitHub Packages conventions:
+            [gpr] * configured (liferay.gpr.consuming.repos.names): ${staticGithubReposNames.collect { "${githubReposOwner}/${it}" }}
+            [gpr] * inferred based on dependencies used: ${inferredGithubReposNames.collect { "${githubReposOwner}/${it}" }}\
         """.stripIndent()
 
         def githubReposToAddAsMavenRepos = staticGithubReposNames + inferredGithubReposNames
