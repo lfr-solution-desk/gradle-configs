@@ -9,8 +9,13 @@ apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr/gpr-cons
 
 // traditional
 dependencies {
-    compileOnly group: 'com.liferay.soldesk.f-root-feature-repo',           name: 'some-artifact', version: '1.0.3'
-    compileOnly group: 'com.liferay.soldesk.f-another-static-feature-repo', name: 'some-artifact', version: '1.0.3'
+    // the usual pattern of the groupId -- nothing else after the repo's name (f-root-feature-repo)
+    compileOnly group: 'com.liferay.soldesk.f-root-feature-repo',                 name: 'some-artifact', version: '1.0.3'
+
+    // unusual, but still allowed groupId -- there is some suffix after the repo's name (f-root-feature-repo-2)
+    providedModules group: 'com.liferay.soldesk.f-root-feature-repo-2.modules.forms', name: 'some-artifact', version: '1.0.3'
+
+    compileOnly group: 'com.liferay.soldesk.f-another-static-feature-repo',       name: 'some-artifact', version: '1.0.3'
 
     // make sure inferring does not crash when there is no "group"
     compileOnly files("lib/test.jar")
@@ -35,8 +40,9 @@ task runGradleTest {
         assert rootProject.repositories.getByName('GitHub Packages - lfr-solution-desk/static-repo-2')
         assert rootProject.repositories.getByName('GitHub Packages - lfr-solution-desk/f-another-static-feature-repo')
 
-        // detected based on this root's module build.gradle
+        // detected based dependencies of the rootProject in this file's build.gradle
         assert rootProject.repositories.getByName('GitHub Packages - lfr-solution-desk/f-root-feature-repo')
+        assert rootProject.repositories.getByName('GitHub Packages - lfr-solution-desk/f-root-feature-repo-2')
         assert rootProject.repositories.getByName('GitHub Packages - lfr-solution-desk/f-another-static-feature-repo')
         
         project(':modules:forms:form-api').with { module ->
