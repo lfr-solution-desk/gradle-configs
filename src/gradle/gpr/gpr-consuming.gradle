@@ -50,7 +50,7 @@ allprojects {
             //  3. return the NNN part ~ name of the GPR repo where the artifact was published
 
             inferredGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
-                d.group.startsWith(inferringDependencyGroupIdPrefix)
+                d.group && d.group.startsWith(inferringDependencyGroupIdPrefix)
             }.collect { Dependency d ->
                 def repoName = d.group.replaceAll(/${inferringDependencyGroupIdPrefix.replace('.', /\./)}([^\.]+).*/, '$1')
 

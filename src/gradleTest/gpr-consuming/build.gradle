@@ -12,7 +12,8 @@ dependencies {
     compileOnly group: 'com.liferay.soldesk.f-root-feature-repo',           name: 'some-artifact', version: '1.0.3'
     compileOnly group: 'com.liferay.soldesk.f-another-static-feature-repo', name: 'some-artifact', version: '1.0.3'
 
-
+    // make sure inferring does not crash when there is no "group"
+    compileOnly files("lib/test.jar")
 }
 
 
