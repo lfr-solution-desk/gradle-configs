@@ -52,7 +52,7 @@ allprojects {
             inferredGithubReposNames = configurations.collect { Configuration c -> c.allDependencies }.flatten().findAll { Dependency d ->
                 d.group && d.group.startsWith(inferringDependencyGroupIdPrefix)
             }.collect { Dependency d ->
-                def repoName = d.group.replaceAll(/${inferringDependencyGroupIdPrefix.replace('.', /\./)}([^\.]+).*/, '$1')
+                def repoName = d.group.replaceAll(/${java.util.regex.Pattern.quote(inferringDependencyGroupIdPrefix)}([^\.]+).*/, '$1')
 
                 logger.info "[gpr] Found dependency ${d.group}:${d.name}:${d.version}, extracted GitHub repo name: ${repoName}"
 
