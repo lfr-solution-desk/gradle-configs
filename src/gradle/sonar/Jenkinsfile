@@ -31,10 +31,10 @@ pipeline {
                                     'GRADLE_OPTS=-XX:MaxMetaspaceSize=512m'
                             ]) {
                                 sh '''\
-                                        ./gradlew --no-daemon --stacktrace --info \
+                                        ./gradlew sonarqube \
+                                            --no-daemon \
                                             -Dsonar.login=$SONAR_TOKEN \
-                                            -Dsonar.branch.name=$BRANCH_NAME \
-                                            sonarqube
+                                            -Dsonar.branch.name=$BRANCH_NAME
                                    '''.stripIndent().trim()
                             }
                         }
@@ -60,14 +60,14 @@ pipeline {
                                         # Sample of github_repo (output): liferay/lfrgs-liferay-damage-control            
                                         github_repo=$(echo $CHANGE_URL | sed 's/https:\\/\\/github.com\\/\\(.*\\)\\/pull\\/[0-9]*/\\1/\')
 
-                                        ./gradlew --no-daemon --stacktrace --info \
+                                        ./gradlew sonarqube \
+                                            --no-daemon \
                                             -Dsonar.login=$SONAR_TOKEN \
                                             -Dsonar.pullrequest.provider=GitHub \
                                             -Dsonar.pullrequest.github.repository=$github_repo \
                                             -Dsonar.pullrequest.key=$CHANGE_ID \
                                             -Dsonar.pullrequest.base=$CHANGE_TARGET \
-                                            -Dsonar.pullrequest.branch=$CHANGE_BRANCH \
-                                            sonarqube
+                                            -Dsonar.pullrequest.branch=$CHANGE_BRANCH
                                    '''.stripIndent().trim()
                             }
                         }

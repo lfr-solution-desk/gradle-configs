@@ -1,13 +1,14 @@
 # Sonar
 
-This config allows your custom modules in Liferay Workspace to be analyzed by SonarScanner and push the data into a remote Sonar server, like SonarCloud or SonarQube. The conffig was created based on:
+This config allows your custom modules in Liferay Workspace to be analyzed by SonarScanner and push the data into a remote Sonar server, like SonarCloud or SonarQube. The config was created based on:
 * https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 * https://github.com/SonarSource/sonar-scanner-gradle
 
 ## Usage in a project
 
 1. Apply the config from your `rootProject`.
-2. Set up all the mandatory properties, see [gradle.properties](gradle.properties), in your properties file(s) or pass it to the build inside a CI job.
+2. Check if the mandatory properties' defaults work for you, see [gradle.properties](gradle.properties), and if not, update them in your project's own gradle.properties.
+3. Make sure to pass `-Dsonar.login=...` when invoking `gradlew sonarqube`, passing your Sonar token (secret) to the task.
 
 ## Supported configuration properties
 
@@ -25,7 +26,7 @@ Please check [.github/workflows/main.yml](.github/workflows/main.yml) -> `sonarc
 
 ## Customizations
 
-These are just some basic examples, details can be found in the SonarScanner docs:
+These are just some basic examples, full details can be found in the SonarScanner docs:
 * https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 * https://github.com/SonarSource/sonar-scanner-gradle
 
@@ -33,7 +34,7 @@ These are just some basic examples, details can be found in the SonarScanner doc
 
 If you don't want a particular project (or projects) analyzed using SonarCloud, you can use following snippet in project's `build.gradle`:
 ```groovy   
-// build.gradle
+// modules/test-module/build.gradle
 
 sonarqube {
     skipProject = true
@@ -46,7 +47,7 @@ on `subprojects` etc.
 ### Adding custom sources dir to be analyzed for a project
 
 ```groovy 
-// build.gradle
+// modules/some-module/build.gradle
 sonarqube {
     properties {
         properties['sonar.sources'] += 'src/other/java'   
@@ -59,7 +60,7 @@ Make sure you don't add overlapping directories: if `src/main/java` is already s
 ### Adding custom tests dir to be used (for coverage etc) for a project
 
 ```groovy 
-// build.gradle
+// modules/some-module/build.gradle
 sonarqube {
     properties {
         properties['sonar.tests'] += 'src/testCustom/java'   
