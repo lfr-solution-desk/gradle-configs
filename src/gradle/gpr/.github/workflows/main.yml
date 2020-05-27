@@ -25,6 +25,7 @@ jobs:
 
   publish_snapshots:
     name: Publish Artifacts as SNAPSHOT versions into GitHub Packages repo
+    needs: build_and_test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.repository, 'lfr-solution-desk/') && (startsWith(github.ref, 'refs/heads/releases/') || github.ref == 'refs/heads/master')
     steps:
