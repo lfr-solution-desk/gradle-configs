@@ -4,6 +4,13 @@
 
 assert project != project.rootProject, "This config cannot be applied on the root project, only subprojects of the Liferay Workspace Gradle build"
 
+// We use tasks.register(), not present in Gradle 4.x;
+// TODO make usable in Gradle 4.x
+def supportedGradleVersions = [ '5.']
+assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
+        "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
+
+
 // For documentation of the input properties, see 'src/gradle/gpr/gradle.properties'
 
 buildscript {

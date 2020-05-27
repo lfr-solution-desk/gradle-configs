@@ -46,13 +46,13 @@ gradleTest.configure {
 
     versions gradle.gradleVersion
     versions '5.6.4'    // default in the latest Liferay Workspace template
-//    versions '4.8.1'    // often used by older workspace projects
+//    versions '4.8.1'    // often used by older workspace projects, but the "target platform" from workspace plugin doe not work with it, only Gradle 5+
 
     // TODO the Liferay Workspace plugin (2.2.6) is not ready yet
 //    versions '6.3'      // testing forward
 
     // If you want to run only a subset of tests, define "include" (on the *.class files)
-    include '**/Sonar_pushSpec.class'
+//    include '**/Sonar_pushSpec.class'
 
     // Required, so that we can append task output listeners and see the logger.info outout from the tested :sonarqube task
     gradleArguments "--info"
