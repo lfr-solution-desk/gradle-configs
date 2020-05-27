@@ -1,5 +1,13 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.container.extras.*
+
+import java.time.Duration
+
 plugins {
     id 'org.ysb33r.gradletest' version '2.0'
+    id 'com.avast.gradle.docker-compose' version '0.12.0'
+    id 'net.saliman.properties' version '1.5.1'
 }
 
 description = 'Various Gradle configs to be used by Solution Desk Gradle builds'
@@ -17,6 +25,24 @@ sourceSets {
     }
 }
 
+def isCIBuild = System.getProperty('gradleTest.environment') == 'ci'
+
+dockerCompose {
+    // create a nested config, so that we can use e.g. 'gradleTestComposeUp'
+    gradleTest {
+        projectNamePrefix = "${project.name}"
+        useComposeFiles = [ "src/gradleTest/docker-compose.yml" ]
+        waitForHealthyStateTimeout = Duration.ofSeconds(60)
+        captureContainersOutputToFiles = "${project.buildDir}/gradleTest_docker-compose-logs"
+
+        removeOrphans = true
+
+//        if (!isCIBuild) {
+//            isRequiredBy(project.tasks.gradleTest)
+//        }
+    }
+}
+
 gradleTest.configure {
     // make sure all generated resources are re-built
     dependsOn 'clean'
@@ -28,28 +54,46 @@ gradleTest.configure {
     // TODO the Liferay Workspace plugin (2.2.6) is not ready yet
 //    versions '6.3'      // testing forward
 
+    // If you want to run only a subset of tests, define "include" (on the *.class files)
+    include '**/Sonar_pushSpec.class'
+
+    // Required, so that we can append task output listeners and see the logger.info outout from the tested :sonarqube task
     gradleArguments "--info"
 
-    // pointers to the tested script plugin file
+    // Pointers to the tested script plugin file
     gradleArguments "--project-prop", "tested.gradle.scripts.local.src.dir=${project.file(sourceSets.main.groovy.srcDirs.first()).absolutePath}"
 
-    gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${sourceSets.main.groovy.srcDirs.first()}"
+    gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${project.relativePath(sourceSets.main.groovy.srcDirs.first())}"
 
     expectFailure ~/gpr-publishing-local_release-checks/
 
-    if (System.getProperty('gradleTest.environment') == 'ci') {
+    // Since we run SonarScanner as part of the 'gradleTest', it actually runs in 'build/*' directory,
+    // which is definitely inside a .gitignore
+    gradleArguments "--system-prop", "sonar.scm.exclusions.disabled=true"
+
+    if (isCIBuild) {
         gradleArguments "--project-prop", "liferay.gpr.publishing.actor=${System.getProperty('GITHUB_ACTOR')}"
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=${System.getProperty('GITHUB_TOKEN')}"
         gradleArguments "--project-prop", "GITHUB_RUN_NUMBER=${System.getProperty('GITHUB_RUN_NUMBER')}"
 
-        gradleArguments "-Dsonar.login=${System.getProperty('SONAR_TOKEN')}"
+        // target Sonar server
+        gradleArguments "--system-prop", "sonar.host.url=https://sonarcloud.io"
+        gradleArguments "--system-prop", "sonar.login=${System.getProperty('SONAR_TOKEN')}"
+
+        gradleArguments "--system-prop", "sonar.organization=lfr-solution-desk"
+        gradleArguments "--system-prop", "sonar.projectKey=lfr-solution-desk_gradle-configs_gradleTest"
+
     } else {
         gradleArguments "--project-prop", "liferay.gpr.publishing.actor=publishing_user"
         gradleArguments "--project-prop", "liferay.gpr.publishing.token=sdfhwer2242h2434"
         expectFailure ~/gpr-publishing-remote/
 
-        gradleArguments "-Dsonar.login=aasdf345IUERW"
-        expectFailure ~/sonar-push/
+        // target Sonar server
+        gradleArguments "--system-prop", "sonar.host.url=${System.getProperty('gradleTest.sonar.host.url')}"
+        gradleArguments "--system-prop", "sonar.login=${System.getProperty('gradleTest.sonar.login')}"
+
+        gradleArguments "--system-prop", "sonar.organization="
+        gradleArguments "--system-prop", "sonar.projectKey=lfr-solution-desk_gradle-configs_gradleTest"
     }
 
     beforeTest {
@@ -57,3 +101,23 @@ gradleTest.configure {
     }
 }
 
+def sonarServerRunning = tasks.register('sonarServerRunning') {
+    onlyIf {
+        !isCIBuild
+    }
+
+    doLast {
+        [ 'gradleTest.sonar.host.url', 'gradleTest.sonar.login' ].each {
+            assert System.getProperty(it), "For the 'gradleTest' task, please provide '${it}' as a System property."
+
+        }
+
+        // verify given Sonar is accessible on given URL
+        def sonarHostUrl = System.getProperty('gradleTest.sonar.host.url')
+        // TODO
+    }
+}
+
+gradleTest.configure {
+    dependsOn sonarServerRunning
+}

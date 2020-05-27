@@ -1,0 +1,244 @@
+.profile {
+	&.dialog-iframe-popup #main-content {
+		#column-1,
+		#column-2,
+		#column-3 {
+			background: $white;
+			color: $black;
+		}
+	}
+
+	.panel-row .portlet-column {
+		height: 70vh;
+		min-height: 600px;
+		padding: 0;
+	}
+
+	#content-inner-wrapper {
+		margin: 0;
+		padding: 0 15px;
+	}
+
+	#main-content {
+		.portlet-content-editable {
+			padding: 0;
+		}
+
+		.header-wrapper {
+			margin-bottom: 0;
+		}
+
+		p {
+			margin: 0;
+
+			&.engagement-dates {
+				margin: $space-stack-default;
+			}
+		}
+
+		#column-1,
+		#column-2,
+		#column-3 {
+			color: $panel-text-color;
+		}
+
+		#column-1 {
+			background: $panel-1-bg;
+		}
+
+		#column-2 {
+			background: $panel-2-bg;
+		}
+
+		#column-3 {
+			background: $panel-3-bg;
+		}
+	}
+
+	/* ---------- Centers bottom right plus button ---------- */
+
+	.btn-bottom-right {
+		padding: inherit;
+	}
+}
+
+.jarvis-engagement.profile,
+.jarvis-project.profile {
+	#column-4 {
+		background: $panel-4-bg;
+		color: $panel-text-color;
+	}
+}
+
+.panel-heading {
+	.fa-icon {
+		margin-right: $space-s;
+	}
+
+	h3 {
+		font-size: 36px;
+		font-weight: 300;
+		margin: 0;
+	}
+}
+
+.sub-heading {
+	@include align-items(center);
+	@include display(flex);
+
+	margin: $space-default 0;
+
+	.fa-exclamation-triangle {
+		color: $color-warning-border;
+	}
+
+	h4 {
+		display: inline-block;
+		font-style: italic;
+		margin: 0;
+		margin-left: $space-default;
+	}
+}
+
+.jarvis-panel {
+	background-color: transparent;
+
+	@include display(flex);
+	@include flex-direction(column);
+
+	height: 70vh;
+	margin: 0;
+	padding: $space-default 40px 40px 40px;
+	position: relative;
+	word-break: break-word;
+
+	.heading {
+		@include align-items(baseline);
+		@include display(flex);
+
+		min-height: 48px;
+	}
+
+	h1 {
+		font-size: 36px;
+	}
+
+	a {
+		color: $default-bg-color;
+		text-decoration: none;
+	}
+
+	.body-container__link--more {
+		@include align-self(flex-end);
+
+		bottom: 20px;
+		font-size: 14px;
+		position: absolute;
+		right: 20px;
+		text-align: right;
+		text-decoration: underline;
+	}
+}
+
+.engagement,
+.project {
+	@include display(flex);
+	@include flex-direction(column);
+
+	height: 100px;
+
+	@include justify-content(space-between);
+
+	margin: $space-stack-default;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
+	&-dates, &-name, &-role {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&-content {
+		@include display(flex);
+	}
+
+	&-icon {
+		.fa-icon {
+			color: #FFF;
+			margin-right: $space-default;
+			margin-top: 6px;
+		}
+
+		@each $name, $color in $status-icon-map {
+			.fa-#{$name} {
+				color: $color;
+			}
+		}
+	}
+
+	&-name {
+		font-size: 24px;
+		font-weight: 600;
+		line-height: normal;
+	}
+
+	&-dates {
+		font-size: $font-size-body;
+		font-weight: 300;
+		text-align: left;
+	}
+
+	&-role {
+		> span {
+			font-weight: 600;
+		}
+	}
+
+	&-description {
+		font-size: 14px;
+	}
+
+	.project-divider {
+		margin: 0;
+		width: 100%;
+		background-color: white;
+	}
+
+	&:nth-last-of-type(1) {
+		.project-divider {
+			width: 0;
+		}
+	}
+}
+
+.engagement {
+	&-details {
+		width: 90%;
+	}
+
+	&-icon {
+		width: 10%;
+	}
+}
+
+.body-container {
+	@include display(flex);
+	@include flex-direction(column);
+
+	height: inherit;
+	overflow-x: hidden;
+	overflow-y: auto;
+
+	@include justify-content(flex-end);
+}
+
+.jarvis-engagement.profile,
+.jarvis-project.profile {
+	//hides technical attributes code icon when it appears on the bottom
+
+	.fa-code {
+		display: none;
+	}
+}

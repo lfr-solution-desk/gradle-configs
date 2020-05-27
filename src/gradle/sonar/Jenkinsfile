@@ -12,10 +12,10 @@ pipeline {
             stages {
                 // >>>>> NOTE <<<<<
                 //
-                // -Psonar.branch.name OR -Psonar.pullrequest.key requires full-depth clone
+                // -Dsonar.branch.name OR -Dsonar.pullrequest.key requires full-depth clone
                 // (complete history of commits), but the job in DXPC Jenkins uses shallow clone (depth=1) by default!
                 //
-                // Without -Psonar.branch.name, SonarCloud will associate the analyzed code always with "master".
+                // Without -Dsonar.branch.name, SonarCloud will associate the analyzed code always with "master".
                 // TODO test "-Dsonar.scm.disabled=true" (enabled by default in SonarCloud UI)
 
                 // Inspired by: https://blog.jdriven.com/2019/08/sonarcloud-github-pull-request-analysis-from-jenkins/

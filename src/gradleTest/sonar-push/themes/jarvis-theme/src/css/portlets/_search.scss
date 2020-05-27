@@ -1,0 +1,16 @@
+.search-results-displayed .portlet-icon-back {
+	display: none;
+}
+
+.search-result-name {
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 78%;
+}
+
+.search-result-type {
+	float: right;
+	font-size: 0.75em;
+}

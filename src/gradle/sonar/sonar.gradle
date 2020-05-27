@@ -1,70 +1,109 @@
+// Applying this script in your Gradle rootProject (Liferay Workspace) will allow you
+// to analyze your source using SonarScanner and push the data to remote Sonar server,
+// like SonarCloud or SonarQube server.
+
+// Created based on:
+//  * https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
+//  * https://github.com/SonarSource/sonar-scanning-examples/tree/master/sonarqube-scanner-gradle
+
 assert project == project.rootProject, "This config can only be applied on the root project"
 
-// We cannot use the plugins DSL, since we are inside a script plugin
 buildscript {
     repositories { mavenCentral() }
     dependencies { classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8" }
 }
 
-boolean analyzeJavaModulesResources =
-        (rootProject.findProperty('liferay.sonar.java.modules.resources.analyzed') ?: 'true').toString().toBoolean()
-boolean analyzeWarModulesWebapp =
-        (rootProject.findProperty('liferay.sonar.war.modules.webapp.analyzed') ?: 'true').toString().toBoolean()
-boolean analyzeNodeModules =
-        (rootProject.findProperty('liferay.sonar.node.modules.analyzed') ?: 'false').toString().toBoolean()
-List<String> extraAnalyzedNodeModulesSourceDirs =
-        (rootProject.findProperty('liferay.sonar.node.modules.extra.analyzed.source.dirs') ?: '').toString().split(',\\s')
+// Set defaults for important SonarScanner properties which are project-specific;
+// use defaults fitting the Solution Desk repos, so no configuration is needed for them.
+//
+// User does not provide the property at all => use our default
+// User does provide the property but is empty => remove (set to null)
+// User does provide the property and is not empty => it
+def sonarScannerPropsDefaults = [
+        'sonar.host.url'    : 'https://sonarcloud.io',
+        'sonar.organization': 'lfr-solution-desk',
+        'sonar.projectKey'  : "lfr-solution-desk_${rootProject.name}"
+]
 
-extraAnalyzedNodeModulesSourceDirs.each {
-    if(new File(it).isAbsolute()) {
-        throw new InvalidUserDataException(
-                "The paths specified in 'liferay.sonar.node.modules.extra.analyzed.source.dirs' have to be relative (found '${it}').")
+sonarScannerPropsDefaults.each { String sonarProp, String defaultValue ->
+    def valueFromUser = System.getProperty(sonarProp)
+    switch (valueFromUser) {
+        case null:
+            System.setProperty(sonarProp, defaultValue)
+            break
+        case { valueFromUser.trim().isEmpty() }:
+            System.clearProperty(sonarProp)
+            break
+        default:
+            // noop
+            break
     }
 }
 
+logger.info """[sonar] System properties for SonarScanner, after defaults were set and props having empty values were removed altogether: \
+${System.properties.findAll { it.key.toString().startsWith('sonar.')}}"""
 
+
+// SonarSource recommends to apply the plugin on the parent project only
 apply plugin: org.sonarqube.gradle.SonarQubePlugin
 
-// For CSS / JS analysis
-//tasks.findByPath(':sonarqube').configure {
-//    dependsOn ':downloadNode'
-//}
-
 subprojects {
-    apply plugin: "jacoco"
+    boolean javaResourcesAnalyzed =
+            (project.findProperty('liferay.sonar.java.resources.analyzed') ?: 'false').toString()
+                    .toBoolean()
+    boolean warWebappAnalyzed =
+            (project.findProperty('liferay.sonar.war.webapp.analyzed') ?: 'false').toString()
+                    .toBoolean()
+    List<String> themeNpmSourcesDirs =
+            (project.findProperty('liferay.sonar.theme.npm.sources.dirs') ?: '').toString()
+                    .split(',\\s').findAll { it }.collect { it.trim() }
+
+    themeNpmSourcesDirs.each {
+        if (new File(it).isAbsolute()) {
+            throw new InvalidUserDataException(
+                    "The paths specified in 'liferay.sonar.theme.npm.sources.dirs' have to be relative (found '${it}').")
+        }
+    }
+
+    logger.info """[sonar] ${project}: javaResourcesAnalyzed= ${javaResourcesAnalyzed} | warWebappAnalyzed = ${warWebappAnalyzed} |\
+themeNpmSourcesDirs= ${themeNpmSourcesDirs}"""
 
     sonarqube {
         properties {
-            // prevent dealing will null values when actually updating the settings below
+            logger.info "[sonar] Reading SonarScanner properties (general) for ${project}"
+
+            // Prevent dealing will null values when actually updating the settings below
             properties['sonar.sources'] = properties['sonar.sources'] ?: []
             properties['sonar.tests'] = properties['sonar.tests'] ?: []
 
             // For CSS / JS analysis
             if (!System.getProperty('sonar.nodejs.executable')) {
-                // Note: the default will not work on Windows, but Sonar should typically be invoked via Jenkins (linux node)
+                // Note: the default will not work on Windows, but Sonar should typically only be invoked via Jenkins (linux node)
                 // TODO find the default path from some workspace task
                 properties['sonar.nodejs.executable'] = rootProject.file('build/node/bin/node')
             }
         }
     }
 
-    plugins.withType(JavaPlugin) {
-        logger.info "[sonarcloud] Java module detected: ${project}"
+    apply plugin: "jacoco"
+
+    project.pluginManager.withPlugin('java') {
+        logger.info "[sonar] Java plugin detected in ${project}"
 
         sonarqube {
             properties {
-                // Add 'src/testIntegration/java' to be analyzed as tests
-                properties['sonar.tests'] =
-                        (properties['sonar.tests'] ?: []) + sourceSets.testIntegration.allJava.srcDirs.findAll { it.isDirectory() }
+                logger.info "[sonar] Reading SonarScanner properties (java) for ${project}"
 
-                if (analyzeJavaModulesResources) {
-                    // Add 'resources' dir to be analyzed as well, not just 'java'; see https://jira.sonarsource.com/browse/SONARGRADL-38
-                    properties['sonar.sources'] += sourceSets.main.resources.srcDirs.findAll { it.isDirectory() }
-                    properties['sonar.tests'] += sourceSets.test.resources.srcDirs.findAll { it.isDirectory() }
-                    properties['sonar.tests'] += sourceSets.testIntegration.resources.srcDirs.findAll { it.isDirectory() }
+                // Add 'src/testIntegration/java' to be analyzed as tests
+                if (sourceSets.findByName('testIntegration')) {
+                    properties['sonar.tests'] += sourceSets.testIntegration.allJava.srcDirs.findAll { it.isDirectory() }
                 }
 
-                logger.info "[sonarcloud] Read SonarScanner properties for ${project}"
+                if (javaResourcesAnalyzed) {
+                    // Add 'resources' dir to be analyzed as well, not just 'java';
+                    // see https://jira.sonarsource.com/browse/SONARGRADL-38
+                    properties['sonar.sources'] += sourceSets.main.resources.srcDirs.findAll { it.isDirectory() }
+                }
             }
         }
 
@@ -79,52 +118,71 @@ subprojects {
         }
     }
 
-    plugins.withType(WarPlugin) {
-        logger.info "[sonarcloud] War module detected: ${project}"
+    project.pluginManager.withPlugin('war') {
+        logger.info "[sonar] War plugin detected in ${project}"
 
         sonarqube {
             properties {
-                if (analyzeWarModulesWebapp) {
-                    // Add 'resources' dir to be analyzed as well, not just 'java'; see https://jira.sonarsource.com/browse/SONARGRADL-38
-                    properties['sonar.sources'] += war.webAppDir
-                }
+                logger.info "[sonar] Reading SonarScanner properties (war) for ${project}"
 
-                logger.info "[sonarcloud] Read SonarScanner properties for ${project}"
+                if (warWebappAnalyzed) {
+                    // Add 'src/main/webapp' dir to be analyzed as well; see https://jira.sonarsource.com/browse/SONARGRADL-38
+                    properties['sonar.sources'] += project.getConvention().getPlugin(WarPluginConvention).webAppDir
+                }
             }
         }
     }
 
-    plugins.withId('com.liferay.node') {
-        if(analyzeNodeModules) {
-            logger.info "[sonarcloud] NodeJS module detected: ${project}"
+    project.afterEvaluate {
+        // Projects inside "themes" directory might have no "war" plugin applied, and then they are built by NPM
 
-            // Try the most common dir 'src' and any extras configured by users
-            def nodeModuleSources = [ project.file('src/') ].addAll(extraAnalyzedNodeModulesSourceDirs.collect { project.file(it) })
+        if (project.path.startsWith(":themes:") && !project.plugins.hasPlugin(WarPlugin)) {
+            logger.info "[sonar] Theme project (not built by war plugin) detected in ${project}"
 
             sonarqube {
                 properties {
-                    nodeModuleSources.findAll { File f -> f.isDirectory() }.each { nodeModuleSource ->
-                        // We may already have e.g. 'src/main/*' from Java, so only add 'src' if not added before
-                        if (!(properties['sonar.sources'].find { it.absolutePath.startsWith(nodeModuleSource.absolutePath) })) {
-                            properties['sonar.sources'] += nodeModuleSource
+                    logger.info "[sonar] Reading SonarScanner properties (npm theme) for ${project}"
+
+                    themeNpmSourcesDirs.each { String themeNpmSourcesDir ->
+                        if (project.file(themeNpmSourcesDir).isDirectory()) {
+                            def overlappedDir = properties['sonar.sources'].find {
+                                it && it.toString().startsWith(themeNpmSourcesDir) || themeNpmSourcesDir.startsWith(it.toString())
+                            }
+                            if (overlappedDir) {
+                                logger.info "[sonar] The directory ${themeNpmSourcesDir} overlaps with an existing 'sonar.sources' " +
+                                        "directory (${overlappedDir}), cannot add it to be analyzed for the npm theme ${project}"
+                            } else {
+                                properties['sonar.sources'] += themeNpmSourcesDir
+                            }
                         }
                     }
                 }
             }
         }
-        else {
-            logger.info "[sonarcloud] NodeJS module detected, but not analyzed as such: ${project}"
-        }
     }
 }
 
-// Validate mandatory inputs to be passed to the build and used by ':sonarqube'
-gradle.taskGraph.whenReady { TaskExecutionGraph tg ->
-    if (tg.hasTask(':sonarqube')) {
-        def requiredSystemProperties = [ 'sonar.host.url', 'sonar.organization', 'sonar.projectKey', 'sonar.login' ]
+def sonarqubePropsCheck = tasks.register('sonarqubePropsCheck') {
+    doLast {
+        // Validate mandatory inputs to be passed to the build and used by ':sonarqube'
+        def requiredSystemProperties = [ 'sonar.host.url', 'sonar.projectKey', 'sonar.login' ]
+
+        // For SonarCloud, the organization is mandatory as well
+        def sonarHostUrl = System.getProperty('sonar.host.url')
+        if (sonarHostUrl && sonarHostUrl.startsWith('https://sonarcloud.io')) {
+            requiredSystemProperties += 'sonar.organization'
+        }
 
         requiredSystemProperties.each {
             assert System.getProperty(it), "You must set the '${it}' System property for the ':sonarqube' task (-D...)"
         }
     }
+}
+
+tasks.findByPath(':sonarqube').configure {
+    // For CSS / JS analysis
+    dependsOn ':downloadNode'
+
+    // Run all the checks first
+    dependsOn sonarqubePropsCheck
 }

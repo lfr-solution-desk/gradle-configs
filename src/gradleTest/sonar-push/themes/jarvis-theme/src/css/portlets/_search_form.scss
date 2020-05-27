@@ -1,0 +1,11 @@
+.row {
+	.search-form {
+		width: 100%;
+		div[class^="col"] {
+			display: inline-block;
+		}
+		.right {
+			float: right;
+		}
+	}
+}

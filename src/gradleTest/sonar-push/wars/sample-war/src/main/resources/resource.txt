@@ -1,0 +1,1 @@
+This is some sampel resource inside a war module.

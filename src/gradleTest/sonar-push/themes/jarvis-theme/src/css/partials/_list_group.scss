@@ -1,0 +1,15 @@
+.tabular-list-group {
+	.list-group-item {
+		height: auto;
+
+		.list-group-item-field,
+		.list-group-item-field:first-child {
+			padding: 0 $space-s;
+			width: 39px;
+		}
+	}
+
+	.list-group-item-content {
+		padding: $space-inset-default;
+	}
+}

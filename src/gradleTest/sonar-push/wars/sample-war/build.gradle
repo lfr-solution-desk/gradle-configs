@@ -1,0 +1,8 @@
+war {
+}
+
+sonarqube {
+    properties {
+        properties['sonar.sources'] += 'src/customSourceSet/java'
+    }
+}

@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  sonarqube:
+    image: "sonarqube:8.3.1-community"
+#    healthcheck:
+#      test: "curl -f -u admin:admin http://localhost:9000/"
+#      interval: 15s
+##      timeout: 10s
+#      retries: 10
+##      start_period: 30s
+    ports:
+    - "127.0.0.1:9000:9000"
