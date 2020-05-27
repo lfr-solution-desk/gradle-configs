@@ -11,11 +11,19 @@ on:
 
 jobs:
   sonarcloud:
-    name: SonarCloud check + code coverage
+    name: SonarCloud
     runs-on: ubuntu-latest
     if: startsWith(github.repository, 'lfr-solution-desk/')
     steps:
       - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      # For PR, we need the target branch so that SonarScanner can correctly see the differences (e.g. current vs. "master");
+      - name: Fetch the target PR branch
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --prune origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
       - name: 'Set up JDK 8'
         uses: actions/setup-java@v1
         with:
@@ -23,11 +31,8 @@ jobs:
       - name: Analyze code with SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GRADLE_OPTS: "-XX:MaxMetaspaceSize=512m"
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GRADLE_OPTS: "-XX:MaxMetaspaceSize=512m"
         run: |
           ./gradlew sonarqube \
-              --no-daemon \
-              --stacktrace \
-              --warning-mode=all \
               -Dsonar.login=${SONAR_TOKEN}
