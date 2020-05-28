@@ -2,6 +2,14 @@
 
 assert project == project.rootProject, "This config can only be applied on the root project"
 
+// TODO make a better check of gradle version
+//  import org.gradle.util.VersionNumber
+//  VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
+
+def supportedGradleVersions = [ '4.', '5.']
+assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
+        "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
+
 // Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
 // use the file to set up their Liferay Workspace plugin (applied in settings.properties)
 buildscript {
