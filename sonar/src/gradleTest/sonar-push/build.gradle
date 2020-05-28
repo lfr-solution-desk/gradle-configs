@@ -1,0 +1,377 @@
+// Nice to have for SonarCloud
+version = '1.3.2'
+description = 'Sample Liferay Workspace project analyzed by SonarScanner #1'
+
+// Apply the plugin - a local script file
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/sonar.gradle"
+
+def sonarqubeTaskOutputListener = new StandardOutputListener() {
+    final StringBuilder outBuilder = new StringBuilder()
+
+    @Override
+    void onOutput(CharSequence output) {
+        outBuilder.append(output)
+    }
+}
+
+tasks.findByName('sonarqube').logging.addStandardOutputListener(sonarqubeTaskOutputListener)
+
+task runGradleTest {
+    dependsOn 'sonarqube'
+
+    doLast {
+//        assert project(':modules:forms:form-api').sonarqube.properties.properties['sonar.sources'] == ['src/main/java']
+//        assert project(':modules:forms:form-api').sonarqube.properties.properties['sonar.tests'] == ['src/test/java', 'src/testIntegration/java']
+//
+//        assert project(':themes:jarvis-theme').sonarqube.properties.properties['sonar.sources'] == ['src', 'custom-src']
+//        assert project(':themes:jarvis-theme').sonarqube.properties.properties['sonar.tests'] == []
+//
+//        assert project(':wars:sample-war').sonarqube.properties.properties['sonar.sources'] == ['src/main/java','src/customSourceSet/java']
+//        assert project(':wars:sample-war').sonarqube.properties.properties['sonar.tests'] == []
+
+        def output = sonarqubeTaskOutputListener.outBuilder.toString()
+
+        assert output.contains("Project key: lfr-solution-desk_gradle-configs_gradleTest")
+
+        // this subproject should have been skipped
+        assert !output.contains("Indexing files of module 'form-api-2'")
+
+        assert output.contains("Indexing files of module 'form-api'")
+        assert output.contains("Indexing files of module 'jarvis-theme'")
+        assert output.contains("Indexing files of module 'sample-war'")
+        assert output.contains("114 files indexed")
+
+        assert output.contains("""\
+Indexing files of module 'form-api\'
+  Base dir: ${project.projectDir.absolutePath}/modules/forms/form-api
+  Source paths: src/main/java
+  Test paths: src/test/java, src/testIntegration/java""")
+
+        assert output.contains("""\
+Indexing files of module 'jarvis-theme\'
+  Base dir: ${project.projectDir.absolutePath}/themes/jarvis-theme
+  Source paths: custom-src, src""")
+
+        assert output.contains("""\
+Indexing files of module 'sample-war\'
+  Base dir: ${project.projectDir.absolutePath}/wars/sample-war
+  Source paths: src/main/java, src/customSourceSet/java""")
+
+
+        // This is the complete sample output:
+        def expectedOutput = '''\
+> Task :sonarqube
+[sonar] Reading SonarScanner properties (general) for project ':modules\'
+[sonar] Reading SonarScanner properties (general) for project ':modules:forms\'
+JaCoCo report task detected, but XML report is not enabled or it was not produced. Coverage for this task will not be reported.
+[sonar] Reading SonarScanner properties (general) for project ':modules:forms:form-api\'
+[sonar] Reading SonarScanner properties (java) for project ':modules:forms:form-api\'
+[sonar] Reading SonarScanner properties (general) for project ':themes\'
+[sonar] Reading SonarScanner properties (general) for project ':themes:jarvis-theme\'
+[sonar] Reading SonarScanner properties (npm theme) for project ':themes:jarvis-theme\'
+[sonar] Reading SonarScanner properties (general) for project ':wars\'
+JaCoCo report task detected, but XML report is not enabled or it was not produced. Coverage for this task will not be reported.
+[sonar] Reading SonarScanner properties (general) for project ':wars:sample-war\'
+[sonar] Reading SonarScanner properties (java) for project ':wars:sample-war\'
+[sonar] Reading SonarScanner properties (war) for project ':wars:sample-war\'
+Caching disabled for task ':sonarqube' because:
+  Build cache is disabled
+Task ':sonarqube' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+[sonar] Reading SonarScanner properties (general) for project ':modules\'
+[sonar] Reading SonarScanner properties (general) for project ':modules:forms\'
+JaCoCo report task detected, but XML report is not enabled or it was not produced. Coverage for this task will not be reported.
+[sonar] Reading SonarScanner properties (general) for project ':modules:forms:form-api\'
+[sonar] Reading SonarScanner properties (java) for project ':modules:forms:form-api\'
+[sonar] Reading SonarScanner properties (general) for project ':themes\'
+[sonar] Reading SonarScanner properties (general) for project ':themes:jarvis-theme\'
+[sonar] Reading SonarScanner properties (npm theme) for project ':themes:jarvis-theme\'
+[sonar] Reading SonarScanner properties (general) for project ':wars\'
+JaCoCo report task detected, but XML report is not enabled or it was not produced. Coverage for this task will not be reported.
+[sonar] Reading SonarScanner properties (general) for project ':wars:sample-war\'
+[sonar] Reading SonarScanner properties (java) for project ':wars:sample-war\'
+[sonar] Reading SonarScanner properties (war) for project ':wars:sample-war\'
+User cache: /Users/jsustacek/.sonar/cache
+Default locale: "en_US", source code encoding: "UTF-8" (analysis is platform dependent)
+SonarScanner will require Java 11 to run starting in SonarQube 8.x
+Load global settings
+Load global settings (done) | time=147ms
+Server id: BF41A1F2-AXJRgJmOl7T10r5pCXC-
+User cache: /Users/jsustacek/.sonar/cache
+Load/download plugins
+Load plugins index
+Load plugins index (done) | time=60ms
+Load/download plugins (done) | time=175ms
+Process project properties
+Process project properties (done) | time=28ms
+Execute project builders
+Execute project builders (done) | time=10ms
+Project key: lfr-solution-desk_gradle-configs_gradleTest
+Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4
+Working dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/build/sonar
+Load project settings for component key: 'lfr-solution-desk_gradle-configs_gradleTest\'
+Load project settings for component key: 'lfr-solution-desk_gradle-configs_gradleTest' (done) | time=22ms
+Load quality profiles
+Load quality profiles (done) | time=124ms
+Load active rules
+Load active rules (done) | time=1545ms
+Exclusions based on SCM info is disabled by configuration
+Indexing files...
+Project configuration:
+Indexing files of module 'form-api\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/modules/forms/form-api
+  Source paths: src/main/java
+  Test paths: src/test/java, src/testIntegration/java
+Indexing files of module 'forms\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/modules/forms
+Indexing files of module 'modules\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/modules
+Indexing files of module 'jarvis-theme\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/themes/jarvis-theme
+  Source paths: custom-src, src
+Load project repositories
+Load project repositories (done) | time=24ms
+Indexing files of module 'themes\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/themes
+Indexing files of module 'sample-war\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/wars/sample-war
+  Source paths: src/main/java, src/customSourceSet/java
+Indexing files of module 'wars\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/wars
+Indexing files of module 'gradle-configs_gradleTest\'
+  Base dir: /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4
+
+114 files indexed
+
+> Task :sonarqube
+Quality profile for css: Sonar way
+Quality profile for java: Sonar way
+Quality profile for js: Sonar way
+Quality profile for xml: Sonar way
+------------- Run sensors on module sample-war
+Load metrics repository
+Load metrics repository (done) | time=21ms
+Sensor JavaSquidSensor [java]
+Configured Java source version (sonar.java.source): 8
+JavaClasspath initialization
+JavaClasspath initialization (done) | time=48ms
+JavaTestClasspath initialization
+JavaTestClasspath initialization (done) | time=7ms
+Java Main Files AST scan
+2 source files to be analyzed
+
+2/2 source files have been analyzed
+0/0 source files have been analyzed
+0/0 source files have been analyzed
+2/2 source files have been analyzed
+2/2 source files have been analyzed
+0/0 source files have been analyzed
+
+> Task :sonarqube
+Java Main Files AST scan (done) | time=1140ms
+Java Test Files AST scan
+0 source files to be analyzed
+Java Test Files AST scan (done) | time=0ms
+Java Generated Files AST scan
+0 source files to be analyzed
+Java Generated Files AST scan (done) | time=1ms
+Sensor JavaSquidSensor [java] (done) | time=1489ms
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=0ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=3ms
+Sensor SurefireSensor [java]
+parsing [/opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/wars/sample-war/target/surefire-reports]
+Sensor SurefireSensor [java] (done) | time=1ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=1ms
+Sensor HTML [web]
+Sensor HTML [web] (done) | time=2ms
+------------- Run sensors on module wars
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=0ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=1ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+------------- Run sensors on module form-api
+Sensor JavaSquidSensor [java]
+Configured Java source version (sonar.java.source): 8
+JavaClasspath initialization
+JavaClasspath initialization (done) | time=0ms
+JavaTestClasspath initialization
+JavaTestClasspath initialization (done) | time=1ms
+Java Main Files AST scan
+2 source files to be analyzed
+Java Main Files AST scan (done) | time=434ms
+Java Test Files AST scan
+2 source files to be analyzed
+Java Test Files AST scan (done) | time=64ms
+Java Generated Files AST scan
+0 source files to be analyzed
+Java Generated Files AST scan (done) | time=1ms
+Sensor JavaSquidSensor [java] (done) | time=508ms
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=1ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=0ms
+Sensor SurefireSensor [java]
+parsing [/opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/modules/forms/form-api/target/surefire-reports]
+Sensor SurefireSensor [java] (done) | time=0ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+Sensor HTML [web]
+Sensor HTML [web] (done) | time=0ms
+------------- Run sensors on module forms
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=0ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=1ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+------------- Run sensors on module modules
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=0ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=1ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+------------- Run sensors on module jarvis-theme
+Sensor SonarCSS Metrics [cssfamily]
+Sensor SonarCSS Metrics [cssfamily] (done) | time=87ms
+Sensor SonarCSS Rules [cssfamily]
+Using Node.js executable /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/build/node/bin/node from property sonar.nodejs.executable.
+36 source files to be analyzed
+
+36/36 source files have been analyzed
+
+> Task :sonarqube
+Sensor SonarCSS Rules [cssfamily] (done) | time=3699ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=3ms
+Sensor JavaScript analysis [javascript]
+Using Node.js executable /opt/devel/liferay/github/gradle-configs/build/gradleTest/sonar-push/5.6.4/build/node/bin/node from property sonar.nodejs.executable.
+1 source files to be analyzed
+
+1/1 source files have been analyzed
+1/1 source files have been analyzed
+2/2 source files have been analyzed
+2/2 source files have been analyzed
+SCM Publisher 0/44 source files have been analyzed (done) | time=224ms
+CPD Executor CPD calculation finished (done) | time=13ms
+
+> Task :sonarqube
+Sensor SonarJS [javascript]
+1 source files to be analyzed
+Sensor SonarJS [javascript] (done) | time=177ms
+Sensor JavaScript analysis [javascript] (done) | time=3604ms
+Sensor JavaXmlSensor [java]
+2 source files to be analyzed
+Sensor JavaXmlSensor [java] (done) | time=183ms
+Sensor HTML [web]
+Sensor HTML [web] (done) | time=1ms
+Sensor XML Sensor [xml]
+2 source files to be analyzed
+Sensor XML Sensor [xml] (done) | time=161ms
+------------- Run sensors on module themes
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=1ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=0ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+------------- Run sensors on module gradle-configs_gradleTest
+Sensor SonarCSS Rules [cssfamily]
+No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+Sensor SonarCSS Rules [cssfamily] (done) | time=0ms
+Sensor JaCoCo XML Report Importer [jacoco]
+'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+Sensor JaCoCo XML Report Importer [jacoco] (done) | time=0ms
+Sensor JavaXmlSensor [java]
+Sensor JavaXmlSensor [java] (done) | time=0ms
+------------- Run sensors on project
+Sensor Zero Coverage Sensor
+Sensor Zero Coverage Sensor (done) | time=10ms
+Sensor Java CPD Block Indexer
+Sensor Java CPD Block Indexer (done) | time=16ms
+SCM Publisher SCM provider for this project is: git
+SCM Publisher 44 source files to be analyzed
+Missing blame information for the following files:
+  * themes/jarvis-theme/src/css/partials/_buttons.scss
+  * themes/jarvis-theme/src/css/portlets/_search_container.scss
+  * themes/jarvis-theme/src/css/partials/_sticker.scss
+  * themes/jarvis-theme/src/css/partials/_fonts.scss
+  * wars/sample-war/src/main/java/WarClass.java
+  * themes/jarvis-theme/src/css/portlets/_control_menu.scss
+  * themes/jarvis-theme/src/css/portlets/_search_form.scss
+  * themes/jarvis-theme/src/css/portlets/_profile_panels.scss
+  * themes/jarvis-theme/src/css/partials/_header.scss
+  * themes/jarvis-theme/src/js/main.js
+  * themes/jarvis-theme/src/css/partials/_heading.scss
+  * themes/jarvis-theme/src/WEB-INF/liferay-look-and-feel.xml
+  * themes/jarvis-theme/src/css/partials/_modal_forms.scss
+  * themes/jarvis-theme/src/css/portlets/_sub_navigation.scss
+  * themes/jarvis-theme/src/css/portlets/_direct_report_groups.scss
+  * themes/jarvis-theme/src/css/partials/_labels.scss
+  * themes/jarvis-theme/src/css/portlets/_technical_attributes.scss
+  * themes/jarvis-theme/src/css/portlets/_scorecard.scss
+  * themes/jarvis-theme/src/css/_custom.scss
+  * themes/jarvis-theme/src/css/partials/mdc-elevation/_variables.scss
+  * themes/jarvis-theme/src/css/partials/_tables.scss
+  * modules/forms/form-api/src/test/java/Test.java
+  * themes/jarvis-theme/src/css/partials/_portlet.scss
+  * themes/jarvis-theme/src/WEB-INF/liferay-layout-templates.xml
+  * themes/jarvis-theme/src/css/portlets/_project_navigation.scss
+  * themes/jarvis-theme/src/css/partials/_icons.scss
+  * themes/jarvis-theme/src/css/portlets/_login.scss
+  * themes/jarvis-theme/src/css/partials/_content.scss
+  * themes/jarvis-theme/src/css/portlets/_social_activities.scss
+  * themes/jarvis-theme/src/css/partials/_mixins.scss
+  * modules/forms/form-api/src/testIntegration/java/IntegrationTest.java
+  * themes/jarvis-theme/src/css/portlets/_staff_panel.scss
+  * themes/jarvis-theme/src/css/partials/mdc-elevation/_mixin.scss
+  * themes/jarvis-theme/custom-src/file.css
+  * themes/jarvis-theme/src/css/partials/_variables.scss
+  * themes/jarvis-theme/src/css/portlets/_engagement_profile.scss
+  * themes/jarvis-theme/src/css/partials/_global.scss
+  * modules/forms/form-api/src/main/java/com/liferay/gs/form/service/DDMFormHelperLocalServiceUtil.java
+  * themes/jarvis-theme/src/css/portlets/_search.scss
+  * themes/jarvis-theme/src/css/portlets/_engagement_merge.scss
+  * themes/jarvis-theme/src/css/portlets/_client_profile.scss
+  * themes/jarvis-theme/src/css/partials/_list_group.scss
+  * themes/jarvis-theme/src/css/partials/_inputs.scss
+  * modules/forms/form-api/src/main/java/com/liferay/gs/form/service/DDMFormHelperLocalService.java
+This may lead to missing/broken features in SonarQube
+CPD Executor 2 files had no CPD blocks
+CPD Executor Calculating CPD for 3 files
+Analysis report generated in 113ms, dir size=178 KB
+Analysis report compressed in 144ms, zip size=74 KB
+Analysis report uploaded in 78ms
+ANALYSIS SUCCESSFUL, you can browse http://localhost:9000/dashboard?id=lfr-solution-desk_gradle-configs_gradleTest
+Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+More about the report processing at http://localhost:9000/api/ce/task?id=AXJU6w6Zl7T10r5pCZhG
+Analysis total time: 17.957 s
+:sonarqube (Thread[Execution worker for ':' Thread 6,5,main]) completed. Took 19.075 secs.'''
+    }
+}

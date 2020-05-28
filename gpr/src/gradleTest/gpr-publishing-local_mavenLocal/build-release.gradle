@@ -1,0 +1,57 @@
+// invoke this test with some special arguments for the build
+project.ext['liferay.gpr.publishing.type' ] = 'RELEASE'
+project.ext['liferay.gpr.publishing.groupid' ] = 'com.liferay.soldesk.gradle-configs-gradleTest-mavenLocal'
+
+// Apply the plugin - a local script file
+subprojects {
+    if (!childProjects) {
+        if (project.name != 'form-api-3') {
+            apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/gpr-publishing.gradle"
+        }
+    }
+}
+
+
+task runGradleTest {
+    dependsOn clean
+
+    // eager cleanup during config phase
+    [
+            'modules/forms/form-api',
+            'modules/forms/form-api-2'
+    ].each {
+        file("${it}/build").deleteDir()
+    }
+
+    doLast {
+        assert project.file('modules/forms/form-api/build/publications/nebula/pom-default.xml').isFile()
+        assert project.file('modules/forms/form-api/build/libs/com.liferay.gs.form.api-1.0.3.jar').isFile()
+
+        // generated for RELEASEs
+        assert project.file('modules/forms/form-api/build/libs/com.liferay.gs.form.api-1.0.3-sources.jar').isFile()
+        assert project.file('modules/forms/form-api/build/libs/com.liferay.gs.form.api-1.0.3-javadoc.jar').isFile()
+
+        assert project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').isFile()
+        assert project.file('modules/forms/form-api-2/build/libs/com.liferay.gs.form.api-1.0.3.jar').isFile()
+
+        // but not if disabled using 'gradle.properties' as done in form-api-2
+        assert project.file('modules/forms/form-api-2/build/libs/').listFiles().find { it.name.endsWith('-sources.jar') } == null
+        assert project.file('modules/forms/form-ap-2i/build/libs/').listFiles().find { it.name.endsWith('-javadoc.jar') } == null
+
+        // TODO implement a way to exclude a module from publishing
+        // Should not be published at all
+        assert !project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
+        assert project.file('modules/forms/form-api-3/build/libs/').listFiles().find { it.name.endsWith('.jar') } == null
+    }
+}
+
+allprojects {
+    afterEvaluate {
+        // The publishing tasks are only added once the individual modules are configured, based on their types
+
+        def taskToTest = tasks.findByName('publishToMavenLocal')
+        if (taskToTest) {
+            runGradleTest.dependsOn taskToTest
+        }
+    }
+}

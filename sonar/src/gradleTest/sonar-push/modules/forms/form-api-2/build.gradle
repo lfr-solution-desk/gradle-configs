@@ -1,0 +1,15 @@
+dependencies {
+    // manually specify the versions, based on:
+    //  https://repo1.maven.org/maven2/com/liferay/portal/release.dxp.bom/7.2.10.fp4/release.dxp.bom-7.2.10.fp4.pom
+    //  https://repo1.maven.org/maven2/com/liferay/portal/release.dxp.bom.compile.only/7.2.10.fp4/release.dxp.bom.compile.only-7.2.10.fp4.pom
+    //  https://repo1.maven.org/maven2/com/liferay/portal/release.dxp.bom.third.party/7.2.10.fp4/release.dxp.bom.third.party-7.2.10.fp4.pom
+
+    compileOnly group: "com.liferay", name: "com.liferay.dynamic.data.mapping.api", version: "5.7.3"
+    compileOnly group: "com.liferay", name: "com.liferay.osgi.util", version: "5.0.5"
+    compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "4.39.2"
+    compileOnly group: "org.osgi", name: "org.osgi.core", version: "6.0.0"
+}
+
+sonarqube {
+    skipProject = true
+}

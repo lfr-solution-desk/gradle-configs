@@ -1,0 +1,112 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.container.extras.*
+import groovy.json.JsonSlurper
+import io.github.httpbuilderng.http.HttpTask
+import groovyx.net.http.FromServer
+
+import java.time.Duration
+
+plugins {
+    id 'com.avast.gradle.docker-compose' version '0.12.0'
+    id "io.github.http-builder-ng.http-plugin" version "0.1.1"
+}
+
+dockerCompose {
+    // create a nested config, so that we can use more descriptive tasks like 'gradleTestComposeUp' and not just 'composeUp'
+    gradleTest {
+        useComposeFiles = [ "src/gradleTest/docker-compose.yml" ]
+        waitForHealthyStateTimeout = Duration.ofMinutes(15)
+        captureContainersOutputToFiles = "${project.buildDir}/gradleTest_docker-compose-logs"
+
+        removeOrphans = true
+
+//        if (!isCIBuild) {
+//            isRequiredBy(project.tasks.gradleTest)
+//        }
+    }
+}
+
+def sonarServerRunning = tasks.register('sonarServerRunning', HttpTask) {
+    onlyIf {
+        !isCIBuild
+    }
+
+    def sonarUrl = project.findProperty('gradleTest.sonar.host.url')
+
+    config {
+        request.uri = sonarUrl
+    }
+    get {
+        request.uri.path = '/'
+        response.failure {
+            throw new InvalidUserDataException("Sonar not running on '${request.uri.toURI()}', did you forget to run `./gradlew gradleTestComposeUp`?")
+        }
+        response.success {
+            logger.quiet "Sonar server is runnig on '${request.uri.toURI()}' as expected"
+        }
+    }
+}
+
+def gradleTestCreateSonarToken = tasks.register('gradleTestCreateSonarToken', HttpTask) {
+    dependsOn gradleTestComposeUp
+
+    def sonarUrl = project.findProperty('gradleTest.sonar.host.url')
+
+    config {
+        request.uri = sonarUrl
+    }
+    get {
+        request.uri.path = '/'
+        response.failure {
+            throw new InvalidUserDataException("Sonar not running on '${request.uri.toURI()}'?")
+        }
+        response.success {
+            logger.quiet "Sonar server is runnig on '${request.uri.toURI()}' as expected"
+        }
+    }
+    // http://localhost:9000/web_api/api/user_tokens
+    post {
+        request.uri.path = '/api/user_tokens/generate'
+        request.headers.'Authorization' = "Basic ${"admin:admin".bytes.encodeBase64().toString()}"
+        request.contentType = 'application/x-www-form-urlencoded'
+        request.body = [name: "gradleTest-" + System.currentTimeMillis()]
+        response.failure { FromServer fs, Object body ->
+            throw new GradleException("${fs.statusCode} - ${fs.message} - ${body}")
+        }
+        response.success { FromServer fs, Object body ->
+            def name = body.name
+            def token = body.token
+
+            logger.quiet """\
+                    Sonar token for gradleTest created (${name}). Put it into your 'gradle-local.properties':
+                    
+                        # gradle-local.properties
+                        gradleTest.sonar.login=${token}
+
+                    This willl make sure the 'gradleTest' task can see it and pass it to SonarScanner in the tests.""".stripIndent()
+
+            // set it so that the gradleTest can use it
+            System.setProperty('sonar.login', token)
+
+            gradleTest.configure {
+                gradleArguments "--system-prop", "sonar.login=${token}"
+            }
+        }
+    }
+}
+
+gradleTestComposeUp.configure {
+    finalizedBy gradleTestCreateSonarToken
+}
+
+gradleTest.configure {
+    dependsOn sonarServerRunning
+
+    // raylife is on this old version, so test it out
+    versions '4.8.1'    // often used by older workspace projects, but the "target platform" from workspace plugin doe not work with it, only Gradle 5+
+    
+    // Since we run SonarScanner as part of the 'gradleTest', it actually runs in 'build/*' directory,
+    // which is definitely inside a .gitignore
+    gradleArguments "--system-prop", "sonar.scm.exclusions.disabled=true"
+}
