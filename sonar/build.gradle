@@ -28,9 +28,6 @@ dockerCompose {
 }
 
 def sonarServerRunning = tasks.register('sonarServerRunning', HttpTask) {
-    onlyIf {
-        !isCIBuild
-    }
 
     def sonarUrl = project.findProperty('gradleTest.sonar.host.url')
 

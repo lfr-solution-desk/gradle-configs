@@ -8,7 +8,7 @@ subprojects {
 
     ext {
         propertiesPluginIgnoreMissingEnvFile = 'true'
-        isCIBuild = System.getProperty('gradleTest.environment') == 'ci'
+        isCIBuild = (findProperty('environmentName') == 'ci')
     }
 
     apply plugin: 'org.ysb33r.gradletest'
