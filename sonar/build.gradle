@@ -34,13 +34,17 @@ def sonarServerRunning = tasks.register('sonarServerRunning', HttpTask) {
 
     def sonarUrl = project.findProperty('gradleTest.sonar.host.url')
 
+    doFirst {
+        logger.quiet "Checking Sonar server is running on '${sonarUrl}' as defined for the 'gradleTest' task..."
+    }
+
     config {
         request.uri = sonarUrl
     }
     get {
         request.uri.path = '/'
         response.failure {
-            throw new InvalidUserDataException("Sonar not running on '${request.uri.toURI()}', did you forget to run `./gradlew gradleTestComposeUp`?")
+            throw new InvalidUserDataException("Sonar not running on '${request.uri.toURI()}', did you forget to run the `gradleTestComposeUp` task?")
         }
         response.success {
             logger.quiet "Sonar server is runnig on '${request.uri.toURI()}' as expected"
@@ -52,6 +56,10 @@ def gradleTestCreateSonarToken = tasks.register('gradleTestCreateSonarToken', Ht
     dependsOn gradleTestComposeUp
 
     def sonarUrl = project.findProperty('gradleTest.sonar.host.url')
+
+    doFirst {
+        logger.quiet "Creating Sonar token in server running on '${sonarUrl}' to be used for the 'gradleTest'..."
+    }
 
     config {
         request.uri = sonarUrl
@@ -103,9 +111,10 @@ gradleTestComposeUp.configure {
 gradleTest.configure {
     dependsOn sonarServerRunning
 
-    // raylife is on this old version, so test it out
-    versions '4.8.1'    // often used by older workspace projects, but the "target platform" from workspace plugin doe not work with it, only Gradle 5+
-    
+    //Raylife is on 4.8.1 version, so test it out
+    versions '4.8.1'
+    versions '4.10.3'
+
     // Since we run SonarScanner as part of the 'gradleTest', it actually runs in 'build/*' directory,
     // which is definitely inside a .gitignore
     gradleArguments "--system-prop", "sonar.scm.exclusions.disabled=true"
