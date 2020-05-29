@@ -1,6 +1,5 @@
 include 'gpr'
 include 'sonar'
-include 'versions'
 include 'workspace-extra'
 
 rootProject.name = 'gradle-configs'
