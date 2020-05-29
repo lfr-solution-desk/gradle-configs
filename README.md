@@ -21,10 +21,6 @@ For details, please check:
  * the sources in [sonar/src/gradle](sonar/src/gradle)
  * the tests in [sonar/src/gradleTest/sonar-push](sonar/src/gradleTest/sonar-push)
 
-## versions
-
-**Deprecated**. This should not be used.
-
 ## workspace-extra
 
 Adds some small pieces of convenience to your Liferay Workspace `rootProject` to make it more robust / usable.
