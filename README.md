@@ -9,17 +9,17 @@ Various configuration files to be used inside Liferay Workspace Gradle builds of
 Allows modules developed in Liferay Workspace to be published as Maven artifacts and consumed from as dependencies in another Gradle build. GitHub Packages repos hosted together with source code repos are used and the Maven repositories.  
 
 For details, please check:
- * the sources in [src/gradle/gpr](src/gradle/gpr)
- * the tests of consuming in [src/gradleTest/gpr-consuming](src/gradleTest/gpr-consuming)
- * the tests of publishing in [src/gradleTest/gpr-publishing-local](src/gradleTest/gpr-publishing-local)
+ * the sources in [gpr/src/gradle](gpr/src/gradle)
+ * the tests of consuming in [gpr/src/gradleTest/gpr-consuming](gpr/src/gradleTest/gpr-consuming)
+ * the tests of publishing in [gpr/src/gradleTest/gpr-publishing-local](gpr/src/gradleTest/gpr-publishing-local)
 
 ## sonar
 
 Allows to analyze the source code of all custom modules using SonarScanner and push the data to SonarCloud / SonarQube. 
 
 For details, please check:
- * the sources in [src/gradle/sonar](src/gradle/sonar)
- * the tests in [src/gradleTest/sonar-push](src/gradleTest/sonar-push)
+ * the sources in [sonar/src/gradle](sonar/src/gradle)
+ * the tests in [sonar/src/gradleTest/sonar-push](sonar/src/gradleTest/sonar-push)
 
 ## versions
 
@@ -30,8 +30,8 @@ For details, please check:
 Adds some small pieces of convenience to your Liferay Workspace `rootProject` to make it more robust / usable.
 
 For details, please check:
- * the sources in [src/gradle/workspace-extra](src/gradle/workspace-extra)
- * the tests in [src/gradleTest/workspace-extra](src/gradleTest/workspace-extra)
+ * the sources in [workspace-extra/src/gradle](workspace-extra/src/gradle)
+ * the tests in [workspace-extra/src/gradleTest/workspace-extra](workspace-extra/src/gradleTest/workspace-extra)
 
 # Developer guide
 

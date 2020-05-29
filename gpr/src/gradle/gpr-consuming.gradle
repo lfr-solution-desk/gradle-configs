@@ -8,7 +8,7 @@ def supportedGradleVersions = [ '4.', '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
-// For documentation of the input properties, see 'src/gradle/gpr/gradle.properties'
+// For documentation of the input properties, see 'gpr/src/gradle/gradle.properties'
 
 String githubReposOwner = project.findProperty('liferay.gpr.consuming.repos.owner') ?: 'lfr-solution-desk'
 
