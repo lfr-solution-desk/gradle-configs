@@ -12,7 +12,7 @@ Apply the config only to the projects you want to publish. You can use various G
 ```
 subprojects {
     if (!childProjects) {
-        apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v0.3/src/gradle/gpr/gpr-publishing.gradle"
+        apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v1.0/gpr/src/gradle/gpr-publishing.gradle"
     }
 }
 ```
@@ -64,7 +64,7 @@ If no artifact can be picked up, the config will just publish the pom.xml for gi
 This config should be applied on the `rootProject` of your Liferay Workspace:
 ```
 // [root]/build.gradle
-apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v0.3/gpr/gpr-consuming.gradle"
+apply from: "https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/v1.0/gpr/src/gradle/gpr-consuming.gradle"
 ```                                                                         
 
 On every project in the build, including the root project itself (`allprojects { ... }`), it adds the Maven repositories pointing to GitHub Packages repos being used by the declared dependencies of every configuration, so that they can be fetched.
