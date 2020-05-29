@@ -42,7 +42,7 @@ subprojects {
         // Pointers to the tested script plugin file
         gradleArguments "--project-prop", "tested.gradle.scripts.local.src.dir=${project.file(sourceSets.main.groovy.srcDirs.first()).absolutePath}"
 
-        gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${project.relativePath(sourceSets.main.groovy.srcDirs.first())}"
+        gradleArguments "--project-prop", "tested.gradle.scripts.remote.repo.url.base=https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/${rootProject.relativePath(project.projectDir)}/${project.relativePath(sourceSets.main.groovy.srcDirs.first())}"
 
         // Forward all project properties like "gradleTest.*" as System and projecct properties, stripping the prefix
         project.properties.findAll { it.key.startsWith('gradleTest.')}.each { k, v ->
