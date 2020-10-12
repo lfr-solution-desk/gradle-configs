@@ -1,0 +1,18 @@
+// We don't want to publish an empty .jar, only pom.xml
+jar.enabled = false
+
+afterEvaluate {
+    publishing.publications.nebula(MavenPublication) {
+        pom.packaging = 'pom'
+        artifacts = []
+    }
+}
+
+dependencies {
+    // We want to list all the sibling modules (real OSGi modules) when
+    // this POM module is declared as a dependency, using 'providedModules'
+
+    parent.childProjects.values().findAll {it != project }.each { sibling ->
+        implementation sibling
+    }
+}

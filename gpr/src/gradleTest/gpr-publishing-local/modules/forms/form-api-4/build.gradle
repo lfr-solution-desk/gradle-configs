@@ -5,9 +5,10 @@ dependencies {
 	compileOnly group: "org.osgi", name: "org.osgi.core"
 }
 
-version = '3.2.3'
+version = '2.1.2'
 
 publishing.publications.nebula(MavenPublication) {
     groupId 'XXX'
     artifactId 'YYY'
+    version '3.2.3'
 }

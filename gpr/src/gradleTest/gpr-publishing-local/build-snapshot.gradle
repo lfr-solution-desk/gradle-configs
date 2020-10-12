@@ -17,37 +17,39 @@ task runGradleTest {
         assert project.file('modules/forms/form-api/build/publications/nebula/pom-default.xml').isFile()
 
         // all defaults, no version set anywhere
-        project.file('modules/forms/form-api/build/publications/nebula/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api</artifactId>')
-            assert it.contains('<version>1.2.0-SNAPSHOT</version>')
+        new XmlSlurper().parseText(project.file('modules/forms/form-api/build/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api'
+            assert project.version == '1.2.0-SNAPSHOT'
+
+            assert project.scm.connection == 'scm:git:https://github.com/lfr-solution-desk/f-gpr-publishing-repo.git'
         }
 
         // version set in bnd.bnd only
         assert project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').isFile()
 
-        project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-2</artifactId>')
-            assert it.contains('<version>1.0.2-SNAPSHOT</version>')
+        new XmlSlurper().parseText(project.file('modules/forms/form-api-2/build/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api-2'
+            assert project.version == '1.0.2-SNAPSHOT'
         }
 
         // version set in bnd.bnd AND build.gradle
         assert project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
 
-        project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.form-api-3</artifactId>')
-            assert it.contains('<version>2.1.2-SNAPSHOT</version>')
+        new XmlSlurper().parseText(project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api-3'
+            assert project.version == '2.1.2-SNAPSHOT'
         }
 
         // version set in bnd.bnd + build.gradle + changed via build.gradle -> pom {}
         assert project.file('modules/forms/form-api-4/build/publications/nebula/pom-default.xml').isFile()
 
-        project.file('modules/forms/form-api-4/build/publications/nebula/pom-default.xml').text.with {
-            assert it.contains('<groupId>XXX</groupId>')
-            assert it.contains('<artifactId>YYY</artifactId>')
-            assert it.contains('<version>3.2.3-SNAPSHOT</version>')
+        new XmlSlurper().parseText(project.file('modules/forms/form-api-4/build/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'XXX'
+            assert project.artifactId == 'YYY'
+            assert project.version == '3.2.3-SNAPSHOT'
         }
 
         // check the target Maven repo was set up as expected
@@ -59,17 +61,49 @@ task runGradleTest {
             }
         }
 
+        // POM-only module
+        assert project.file('modules/forms/pom-all/build/publications/nebula/pom-default.xml').isFile()
+
+        new XmlSlurper().parseText(project.file('modules/forms/pom-all/build/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.pom-all'
+            assert project.version == '1.2.0-SNAPSHOT'
+            assert project.packaging == 'pom'
+
+            assert project.scm.connection == 'scm:git:https://github.com/lfr-solution-desk/f-gpr-publishing-repo.git'
+
+            // siblings of the POM modules are dependencies
+            assert project.dependencies.dependency.size()  == 4
+            assert project.dependencies.dependency[0].groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.dependencies.dependency[0].artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api'
+            assert project.dependencies.dependency[0].version == '1.2.0-SNAPSHOT'
+            assert project.dependencies.dependency[0].scope == 'runtime'
+
+            assert project.dependencies.dependency[1].groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.dependencies.dependency[1].artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api-2'
+            assert project.dependencies.dependency[1].version == '1.0.2-SNAPSHOT'
+            assert project.dependencies.dependency[1].scope == 'runtime'
+
+            assert project.dependencies.dependency[2].groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.dependencies.dependency[2].artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.form-api-3'
+            assert project.dependencies.dependency[2].version == '2.1.2-SNAPSHOT'
+            assert project.dependencies.dependency[2].scope == 'runtime'
+
+            assert project.dependencies.dependency[3].groupId == 'XXX'
+            assert project.dependencies.dependency[3].artifactId == 'YYY'
+            assert project.dependencies.dependency[3].version == '3.2.3-SNAPSHOT'
+            assert project.dependencies.dependency[3].scope == 'runtime'
+        }
+
         // THEMES
-//        assert project.file('themes/jarvis-theme/dist/jarvis-theme.war').isFile()
+        //        assert project.file('themes/jarvis-theme/dist/jarvis-theme.war').isFile()
         assert project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').isFile()
 
-        project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').text.with {
-            assert it.contains('<groupId>com.liferay.soldesk.f-gpr-publishing-repo</groupId>')
-            assert it.contains('<artifactId>com.liferay.soldesk.f-gpr-publishing-repo.jarvis-theme</artifactId>')
-            assert it.contains('<version>1.0.0-SNAPSHOT</version>')
-            assert it.contains('<packaging>war</packaging>')
-
-            assert it.contains('lfr-solution-desk/f-gpr-publishing-repo')
+        new XmlSlurper().parseText(project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').text).with {project ->
+            assert project.groupId == 'com.liferay.soldesk.f-gpr-publishing-repo'
+            assert project.artifactId == 'com.liferay.soldesk.f-gpr-publishing-repo.jarvis-theme'
+            assert project.version == '1.0.0-SNAPSHOT'
+            assert project.packaging == 'war'
         }
 
         // check the target Maven repo was set up as expected

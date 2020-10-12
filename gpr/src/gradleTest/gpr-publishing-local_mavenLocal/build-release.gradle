@@ -38,8 +38,7 @@ task runGradleTest {
         assert project.file('modules/forms/form-api-2/build/libs/').listFiles().find { it.name.endsWith('-sources.jar') } == null
         assert project.file('modules/forms/form-ap-2i/build/libs/').listFiles().find { it.name.endsWith('-javadoc.jar') } == null
 
-        // TODO implement a way to exclude a module from publishing
-        // Should not be published at all
+        // Should not be published at all -- config not applied on 'form-api-3'
         assert !project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
         assert project.file('modules/forms/form-api-3/build/libs/').listFiles().find { it.name.endsWith('.jar') } == null
     }
