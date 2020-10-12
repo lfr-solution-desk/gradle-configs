@@ -71,6 +71,7 @@ project.extensions.add(GprExtension, 'gpr', new GprExtension(publishedGroupId, p
 
 apply plugin: nebula.plugin.publishing.maven.MavenPublishPlugin
 apply plugin: nebula.plugin.publishing.verification.PublishVerificationPlugin
+apply plugin: nebula.plugin.contacts.ContactsPlugin
 
 publishing {
     // The target Maven repository to publish into
