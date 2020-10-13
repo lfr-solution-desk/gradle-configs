@@ -41,6 +41,8 @@ task runGradleTest {
         assert output.contains("Indexing files of module 'sample-war'")
         assert output.contains("114 files indexed")
 
+        assert output.contains("2 files ignored because of inclusion/exclusion patterns")
+
         assert output.contains("""\
 Indexing files of module 'form-api\'
   Base dir: ${project.projectDir.absolutePath}/modules/forms/form-api
@@ -144,6 +146,7 @@ Indexing files of module 'gradle-configs_gradleTest\'
 114 files indexed
 
 > Task :sonarqube
+2 files ignored because of inclusion/exclusion patterns
 Quality profile for css: Sonar way
 Quality profile for java: Sonar way
 Quality profile for js: Sonar way

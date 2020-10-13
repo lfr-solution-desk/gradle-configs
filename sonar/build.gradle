@@ -1,7 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.image.*
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.container.extras.*
-import groovy.json.JsonSlurper
 import io.github.httpbuilderng.http.HttpTask
 import groovyx.net.http.FromServer
 
