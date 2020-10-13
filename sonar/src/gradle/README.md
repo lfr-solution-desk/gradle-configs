@@ -53,7 +53,7 @@ sonarqube {
         properties['sonar.sources'] += 'src/other/java'   
     }
 }
-```   
+```
 
 Make sure you don't add overlapping directories: if `src/main/java` is already set to be analyzed (which is by default for any 'java' project detected), you cannot for example add `src` or `src/main`. You'd need to first remove the `src/main/java` entry from `sonar.sources` and then add its parent directory to the list.
 
@@ -68,4 +68,22 @@ sonarqube {
 }
 ```     
 
-Same restriction as for `sonar.sources` mentioned above applies: entries cannot overlap (e.g. `src/test/java` and `src/test` cannot be configured together). 
+Same restriction as for `sonar.sources` mentioned above applies: entries cannot overlap (e.g. `src/test/java` and `src/test` cannot be configured together).
+
+### Excluding files from being analyzed
+
+List files or directories which should not be analyzed. The content of these will
+not be part of the analysis report at all (not just issues being ignored in these 
+as the `sonar.issue.ignore.*` OOTB properties of SonarScanner).
+
+```groovy 
+// modules/some-module/build.gradle
+sonarqube {
+    properties {
+        properties['sonar.exclusions'] = [
+            'src/main/java/com/acme/module/CustomerService.java',
+            'src/main/java/com/acme/module/AccountService.java',
+        ]   
+    }
+}
+```  
