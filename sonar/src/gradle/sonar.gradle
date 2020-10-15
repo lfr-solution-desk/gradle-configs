@@ -84,13 +84,6 @@ generatedJavaFilesExcluded= ${generatedJavaFilesExcluded} | themeNpmSourcesDirs=
             properties['sonar.sources'] = properties['sonar.sources'] ?: []
             properties['sonar.tests'] = properties['sonar.tests'] ?: []
             properties['sonar.exclusions'] = properties['sonar.exclusions'] ?: []
-
-            // For CSS / JS analysis
-            if (!System.getProperty('sonar.nodejs.executable')) {
-                // Note: the default will not work on Windows, but Sonar should typically only be invoked via Jenkins (linux node)
-                // TODO find the default path from some workspace task
-                properties['sonar.nodejs.executable'] = rootProject.file('build/node/bin/node')
-            }
         }
     }
 
@@ -201,9 +194,6 @@ def sonarqubePropsCheck = tasks.create('sonarqubePropsCheck') {
 }
 
 tasks.findByPath(':sonarqube').configure {
-    // For CSS / JS analysis
-    dependsOn ':downloadNode'
-
     // Run all the checks first
     dependsOn sonarqubePropsCheck
 }

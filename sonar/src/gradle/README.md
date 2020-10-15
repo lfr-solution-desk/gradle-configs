@@ -87,3 +87,6 @@ sonarqube {
     }
 }
 ```  
+
+### Analyzing CSS / JS
+If you include some CSS / JS files in the 'sonar.source', make sure to have a valid NodeJS executable in PATH o provide the path manually via `-Dsonar.nodejs.executable=...` on command line o in your `gradle*.properties`.
