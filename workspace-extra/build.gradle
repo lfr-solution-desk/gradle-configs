@@ -1,5 +1,0 @@
-gradleTest.configure {
-    // TODO Raylife is on 4.8.1 version, so test it out
-//    versions '4.8.1'
-//    versions '4.10.3'
-}

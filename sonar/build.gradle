@@ -107,10 +107,6 @@ gradleTestComposeUp.configure {
 gradleTest.configure {
     dependsOn sonarServerRunning
 
-    //Raylife is on 4.8.1 version, so test it out
-    versions '4.8.1'
-    versions '4.10.3'
-
     // Since we run SonarScanner as part of the 'gradleTest', it actually runs in 'build/*' directory,
     // which is definitely inside a .gitignore
     gradleArguments "--system-prop", "sonar.scm.exclusions.disabled=true"

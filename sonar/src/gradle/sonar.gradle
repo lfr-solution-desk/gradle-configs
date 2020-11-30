@@ -8,7 +8,7 @@
 
 assert project == project.rootProject, "This config can only be applied on the root project"
 
-def supportedGradleVersions = [ '4.', '5.']
+def supportedGradleVersions = [ '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
@@ -175,8 +175,7 @@ generatedJavaFilesExcluded= ${generatedJavaFilesExcluded} | themeNpmSourcesDirs=
     }
 }
 
-// Avoid using tasks.register() for now, to support Gradle 4.x as well. The task is very lightweight
-def sonarqubePropsCheck = tasks.create('sonarqubePropsCheck') {
+def sonarqubePropsCheck = tasks.register('sonarqubePropsCheck') {
     doLast {
         // Validate mandatory inputs to be passed to the build and used by ':sonarqube'
         def requiredSystemProperties = [ 'sonar.host.url', 'sonar.projectKey', 'sonar.login' ]

@@ -6,7 +6,7 @@ assert project == project.rootProject, "This config can only be applied on the r
 //  import org.gradle.util.VersionNumber
 //  VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
 
-def supportedGradleVersions = [ '4.', '5.']
+def supportedGradleVersions = [ '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
