@@ -1,0 +1,51 @@
+// This config adds the support for "build variants" feature.
+
+// This should be applied only from settings.gradle
+assert hasProperty('settings') && properties['settings'] instanceof org.gradle.api.initialization.Settings,
+        "This config can only be applied from 'settings.gradle'"
+
+// TODO make a better check of gradle version
+//  import org.gradle.util.VersionNumber
+//  VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
+
+def supportedGradleVersions = [ '5.']
+assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
+        "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
+
+
+/**
+ * Sets a set of Gradle project properties, parsed from given String. Returns count
+ * of loaded properties.
+ */
+def projectProperties = { String propsString ->
+    def p = new Properties()
+    p.load(new StringReader(propsString));
+    p.each { prop ->
+        // Use System properties; the JVM is the same in when evaluating settings.gradle and build.gradle
+        // https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties
+        System.setProperty("org.gradle.project.${prop.key}", prop.value)
+    }
+    return p.size()
+}
+
+final def buildVariantPropertyName = System.getProperty('buildVariantPropertyName') ?: 'buildVariant'
+final def buildVariantsDir = System.getProperty('buildVariantsDir') ?: 'buildVariants'
+
+def buildVariant = properties[buildVariantPropertyName] ?: ""
+
+if (buildVariant) {
+    def buildVariantFilePath = "${buildVariantsDir}/${buildVariant}.properties"
+    def buildVariantFile = new File(rootProject.projectDir, buildVariantFilePath)
+
+    if (buildVariantFile.isFile() && buildVariantFile.canRead()) {
+        def propsCount = projectProperties(buildVariantFile.text)
+
+        logger.quiet "[build-variants] ${propsCount} project properties were loaded from '${buildVariantFilePath}'. " +
+                "These will override the ones in gradle*.properties. `-P...` can be used as the last-resort override."
+    } else {
+        throw new InvalidUserDataException("buildVariant file '${buildVariantFile}' cannot be read as expected for '${buildVariantPropertyName} = ${buildVariant}'.")
+    }
+}
+else {
+    logger.quiet "[build-variants] No '${buildVariantPropertyName}' provided."
+}

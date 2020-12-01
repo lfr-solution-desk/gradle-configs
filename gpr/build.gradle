@@ -1,6 +1,4 @@
 gradleTest.configure {
-    //    versions '4.8.1'    // often used by older workspace projects, but the "target platform" from workspace plugin doe not work with it, only Gradle 5+
-
     expectFailure ~/gpr-publishing-local_release-checks/
 
     if (!isCIBuild) {

@@ -6,7 +6,7 @@ assert project == project.rootProject, "This config can only be applied on the r
 //  import org.gradle.util.VersionNumber
 //  VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
 
-def supportedGradleVersions = [ '4.', '5.']
+def supportedGradleVersions = [ '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
@@ -28,17 +28,19 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 
 [
         'SHA-256': 'liferay.workspace.bundle.checksum[sha-256]',
-        'MD5': 'liferay.workspace.bundle.checksum[md5]',
+        'MD5':     'liferay.workspace.bundle.checksum[md5]',
 ].each { checksumAlgorithm, expectedSumPropName ->
-    // Verify checksum using given algorithm, if the project property with expected checksum is provided
+    // Verify checksum using given algorithm, but only if the project property
+    // with the expected checksum was provided
+    def expectedSum = findProperty(expectedSumPropName)
 
-    if (findProperty(expectedSumPropName)) {
+    if (expectedSum) {
         def bundleFileName = gradle.liferayWorkspace.bundleUrl.substring(gradle.liferayWorkspace.bundleUrl.lastIndexOf('/') + 1)
 
         def verifyBundle = tasks.register("verifyBundle${checksumAlgorithm}", Verify) {
             src new File(gradle.liferayWorkspace.bundleCacheDir, bundleFileName)
             algorithm checksumAlgorithm
-            checksum findProperty(expectedSumPropName)
+            checksum expectedSum
 
             doFirst {
                 logger.info "[workspace-extra] Verifying checksum of the used bundle file '${src}', as found in the bundleCacheDir"
@@ -49,4 +51,73 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
             finalizedBy verifyBundle
         }
     }
+}
+
+
+// A sanity check in case the Tomcat version inside the used bundle changes and
+// we miss to update the version in 'configs/*/tomcat-NNN'
+// Based on: https://gist.github.com/sustacek/322318eb01fc9c5014efc0f7622b6062
+[
+        (initBundle): gradle.liferayWorkspace.homeDir,
+        (distBundle): file("${buildDir}/dist")
+].each {Task bundleProducingTask, File destDir ->
+    def checkBundleTask = tasks.register("${bundleProducingTask.name}VerifyTomcatVersion") {
+        onlyIf {
+            // liferayWorkspace.appServerTomcatVersion was only added in some later (3.x)
+            // version of the workspace plugin, so only run this task in the later versions
+            !bundleProducingTask.state.failure &&
+                    gradle.liferayWorkspace.hasProperty('appServerTomcatVersion')
+        }
+
+        doLast {
+            assert gradle.liferayWorkspace.appServerTomcatVersion,
+                    "gradle.liferayWorkspace.appServerTomcatVersion should never be empty"
+
+            logger.info "[workspace-extra] Checking Tomcat files in '${destDir}'"
+
+            def tomcatDirNameMatchingBundle = "tomcat-" + gradle.liferayWorkspace.appServerTomcatVersion
+
+            def offendingTomcatFiles =
+                    fileTree(destDir)
+                            .include("tomcat-*/**")
+                            .exclude("${tomcatDirNameMatchingBundle}/**")
+
+            if (!offendingTomcatFiles.isEmpty()) {
+                throw new GradleException(
+                        "Some of the files copied from '${relativePath(gradle.liferayWorkspace.configsDir)}' have a wrong " +
+                                "Tomcat version. Make sure to place Tomcat files only inside '${tomcatDirNameMatchingBundle}'" +
+                                " to be matching the Tomcat dir in the configured bundle.\n" +
+                                offendingTomcatFiles.collect { "  * ${it.absolutePath - destDir.absolutePath}" }.join("\n"))
+            }
+            else {
+                logger.info "[workspace-extra] All good, only '${tomcatDirNameMatchingBundle}' found as expected."
+            }
+        }
+    }
+
+    bundleProducingTask.configure {
+        finalizedBy checkBundleTask
+    }
+}
+
+
+// Print the effective versions of various pieces
+project.afterEvaluate {
+    logger.quiet """\
+Final build settings: 
+    Gradle version:             ${gradle.gradleVersion} 
+    JDK version:                ${JavaVersion.current()} 
+    
+    rootProject.version:        ${rootProject.version}  
+    
+    gradle.liferayWorkspace:
+        targetPlatformVersion:  ${gradle.liferayWorkspace.targetPlatformVersion}
+        bundleUrl:              ${gradle.liferayWorkspace.bundleUrl}
+        dockerImageLiferay:     ${gradle.liferayWorkspace.dockerImageLiferay}
+        appServerTomcatVersion: ${gradle.liferayWorkspace.properties['appServerTomcatVersion']}
+        
+        configsDir:             [rootProject]/${rootProject.relativePath(gradle.liferayWorkspace.configsDir)}
+        homeDir (initBundle):   [rootProject]/${rootProject.relativePath(gradle.liferayWorkspace.homeDir)}
+        modulesDir:             ${findProperty('liferay.workspace.modules.dir') ?: "modules"}
+""".readLines().collect { "[workspace-extra] ${it}"}.join(System.lineSeparator())
 }
