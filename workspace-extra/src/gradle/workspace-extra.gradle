@@ -10,27 +10,24 @@ def supportedGradleVersions = [ '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
-def pluginVersions = [
-        propertiesPlugin:
-                findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.5.1',
-        downloadTask:
-                findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]]') ?: '4.1.1'
-]
 
-// Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
-// use the file to set up their Liferay Workspace plugin (applied in settings.properties)
 buildscript {
-    repositories { mavenCentral() }
-    dependencies { classpath "net.saliman:gradle-properties-plugin:${pluginVersions.propertiesPlugin}" }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        // Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
+        // use the file to set up their Liferay Workspace plugin (applied in settings.properties)
+        classpath "net.saliman:gradle-properties-plugin:" +
+                (findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.5.1')
+
+        // Make sure we can use the classes from the Download plugin, like the Verify below
+        classpath "de.undercouch:gradle-download-task:" +
+                (findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]') ?: '4.1.1')
+    }
 }
 apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
-
-
-// Make sure we can use the classes from the Download plugin, like the Verify below
-buildscript {
-    repositories { jcenter() }
-    dependencies { classpath "de.undercouch:gradle-download-task:${pluginVersions.downloadTask}" }
-}
 apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 
 [
