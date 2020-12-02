@@ -10,11 +10,18 @@ def supportedGradleVersions = [ '5.']
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
 
+def pluginVersions = [
+        propertiesPlugin:
+                findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.4.6',
+        downloadTask:
+                findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]]') ?: '4.0.4'
+]
+
 // Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
 // use the file to set up their Liferay Workspace plugin (applied in settings.properties)
 buildscript {
     repositories { mavenCentral() }
-    dependencies { classpath group: "net.saliman", name: "gradle-properties-plugin", version: "1.4.6" }
+    dependencies { classpath "net.saliman:gradle-properties-plugin:${pluginVersions.propertiesPlugin}" }
 }
 apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
 
@@ -22,7 +29,7 @@ apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
 // Make sure we can use the classes from the Download plugin, like the Verify below
 buildscript {
     repositories { jcenter() }
-    dependencies { classpath group: "de.undercouch", name: "gradle-download-task", version: "4.0.4" }
+    dependencies { classpath "de.undercouch:gradle-download-task:${pluginVersions.downloadTask}" }
 }
 apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 
@@ -33,9 +40,11 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
     // Verify checksum using given algorithm, but only if the project property
     // with the expected checksum was provided
     def expectedSum = findProperty(expectedSumPropName)
-
+    
     if (expectedSum) {
-        def bundleFileName = gradle.liferayWorkspace.bundleUrl.substring(gradle.liferayWorkspace.bundleUrl.lastIndexOf('/') + 1)
+        def bundleFileName =
+                gradle.liferayWorkspace.bundleUrl.substring(
+                        gradle.liferayWorkspace.bundleUrl.lastIndexOf('/') + 1)
 
         def verifyBundle = tasks.register("verifyBundle${checksumAlgorithm}", Verify) {
             src new File(gradle.liferayWorkspace.bundleCacheDir, bundleFileName)
