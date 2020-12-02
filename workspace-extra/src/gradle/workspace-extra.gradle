@@ -20,11 +20,11 @@ buildscript {
         // Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
         // use the file to set up their Liferay Workspace plugin (applied in settings.properties)
         classpath "net.saliman:gradle-properties-plugin:" +
-                (findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.5.1')
+                (findProperty('liferay.workspace-extra.plugin.version[net.saliman][gradle-properties-plugin]') ?: '1.5.1')
 
         // Make sure we can use the classes from the Download plugin, like the Verify class below
         classpath "de.undercouch:gradle-download-task:" +
-                (findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]') ?: '4.1.1')
+                (findProperty('liferay.workspace-extra.plugin.version[de.undercouch][gradle-download-task]') ?: '4.1.1')
     }
 }
 apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
