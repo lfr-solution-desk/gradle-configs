@@ -22,7 +22,7 @@ buildscript {
         classpath "net.saliman:gradle-properties-plugin:" +
                 (findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.5.1')
 
-        // Make sure we can use the classes from the Download plugin, like the Verify below
+        // Make sure we can use the classes from the Download plugin, like the Verify class below
         classpath "de.undercouch:gradle-download-task:" +
                 (findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]') ?: '4.1.1')
     }
@@ -31,8 +31,8 @@ apply plugin: net.saliman.gradle.plugin.properties.PropertiesPlugin
 apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 
 [
-        'SHA-256': 'liferay.workspace.bundle.checksum[sha-256]',
-        'MD5':     'liferay.workspace.bundle.checksum[md5]',
+        'SHA-256': 'liferay.workspace-extra.bundle.checksum[sha-256]',
+        'MD5':     'liferay.workspace-extra.bundle.checksum[md5]',
 ].each { checksumAlgorithm, expectedSumPropName ->
     // Verify checksum using given algorithm, but only if the project property
     // with the expected checksum was provided
@@ -134,4 +134,16 @@ Final build settings:
         homeDir (initBundle):   [rootProject]/${rootProject.relativePath(gradle.liferayWorkspace.homeDir)}
         modulesDir:             ${findProperty('liferay.workspace.modules.dir') ?: "modules"}
 """.readLines().collect { "[workspace-extra] ${it}"}.join(System.lineSeparator())
+}
+
+
+// Check that the user did not use one of deprecated props used in one of the previous releases
+[
+        // deprecated prop                          : replacement prop
+        'liferay.workspace.bundle.checksum[sha-256]': 'liferay.workspace-extra.bundle.checksum[sha-256]',
+        'liferay.workspace.bundle.checksum[md5]':     'liferay.workspace-extra.bundle.checksum[md5]',
+].each {
+    if (findProperty(it.key)) {
+        throw new InvalidUserDataException("Property '${it.key}' was deprecated, please use '${it.value}' instead.")
+    }
 }

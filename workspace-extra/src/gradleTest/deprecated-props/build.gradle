@@ -1,0 +1,21 @@
+def thrown
+
+try {
+    apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/workspace-extra.gradle"
+} catch (Exception e) {
+    thrown = e
+}
+
+task runGradleTest {
+    dependsOn 'tasks'
+
+    doLast {
+        // this test is expected to fail
+        assert thrown
+        assert thrown instanceof GradleScriptException
+        assert thrown.cause && thrown.cause instanceof GradleException
+
+        assert thrown.cause.message ==
+                "Property 'liferay.workspace.bundle.checksum[sha-256]' was deprecated, please use 'liferay.workspace-extra.bundle.checksum[sha-256]' instead."
+    }
+}
