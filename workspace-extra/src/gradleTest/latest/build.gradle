@@ -1,0 +1,23 @@
+apply from: "${findProperty('tested.gradle.scripts.local.src.dir')}/workspace-extra.gradle"
+
+task runGradleTest {
+    dependsOn 'distBundle', 'initBundle'
+
+    doLast {
+        // gradle-local.properties was read
+        assert findProperty('some.local.property') == 'valueNNN'
+
+        // verification of checksums was done
+        assert gradle.taskGraph.hasTask(':verifyBundleMD5')
+        assert gradle.taskGraph.hasTask(':verifyBundleSHA-256')
+        assert gradle.taskGraph.hasTask(':downloadBundle')
+        assert gradle.taskGraph.hasTask(':distBundle')
+        assert gradle.taskGraph.hasTask(':initBundle')
+
+        // verification was run
+        assert gradle.taskGraph.hasTask(':distBundleVerifyTomcatVersion') &&
+                ((Task)distBundleVerifyTomcatVersion).state.executed
+        assert gradle.taskGraph.hasTask(':initBundleVerifyTomcatVersion') &&
+                ((Task)initBundleVerifyTomcatVersion).state.executed
+    }
+}

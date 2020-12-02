@@ -1,0 +1,21 @@
+// This config can only be applied in settings.gradle
+
+// Test with the properties plugins applied, as typically done via the 'workspace-extra' config
+plugins {
+    id "net.saliman.properties" version "1.5.1"
+}
+
+task runGradleTest {
+    dependsOn 'jar'
+
+    doLast {
+        // gradle-local.properties was read
+        assert findProperty('some.local.property') == 'valueNNN'
+
+        // Its the one from the variant, not the one from gradle.properties
+        assert findProperty('liferay.workspace.target.platform.version') == '7.3.10'
+
+        // the workspace plugins has seen the variant's version of the property and it's set in the extension object
+        assert gradle.liferayWorkspace.targetPlatformVersion == '7.3.10'
+    }
+}

@@ -30,7 +30,6 @@ subprojects {
         // make sure all generated resources are re-built
         dependsOn 'clean'
 
-        versions gradle.gradleVersion
         versions '5.6.4'    // default in the latest Liferay Workspace template
 
         // TODO the Liferay Workspace plugin (2.2.6) is not ready yet

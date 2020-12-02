@@ -6,11 +6,14 @@ assert hasProperty('settings') && properties['settings'] instanceof org.gradle.a
 
 // TODO make a better check of gradle version
 //  import org.gradle.util.VersionNumber
-//  VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
+//  org.gradle.util.VersionNumber versionNumber = VersionNumber.parse(gradle.getGradleVersion());
 
-def supportedGradleVersions = [ '5.']
+def supportedGradleVersions = [ '5.' ]
 assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
         "This config is only supported in following Gradle versions: ${supportedGradleVersions}"
+
+// TODO since this config is applied from settings.gradle, we could even check version of workspace plugin
+// buildscript.configurations.classpath.dependencies.find { it.group == 'com.liferay' && it.name == 'com.liferay.gradle.plugins.workspace' }.each { println it.version }
 
 
 /**

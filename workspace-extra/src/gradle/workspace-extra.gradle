@@ -64,14 +64,21 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
     def checkBundleTask = tasks.register("${bundleProducingTask.name}VerifyTomcatVersion") {
         onlyIf {
             // liferayWorkspace.appServerTomcatVersion was only added in some later (3.x)
-            // version of the workspace plugin, so only run this task in the later versions
+            // version of the workspace plugin, so only run this task when the later version of Workspace
+            // plugin is applied.
+            // Also only run this check only if "appServerTomcatVersion" is known or "product" was defined
+            // (and supplied the Tomcat version)
             !bundleProducingTask.state.failure &&
-                    gradle.liferayWorkspace.hasProperty('appServerTomcatVersion')
+                    gradle.liferayWorkspace.hasProperty('appServerTomcatVersion') &&
+                    (gradle.liferayWorkspace.appServerTomcatVersion ||
+                            (gradle.liferayWorkspace.hasProperty('product') && gradle.liferayWorkspace.product))
         }
 
         doLast {
             assert gradle.liferayWorkspace.appServerTomcatVersion,
-                    "gradle.liferayWorkspace.appServerTomcatVersion should never be empty"
+                    "'gradle.liferayWorkspace.appServerTomcatVersion' should never be empty when using 'liferay.workspace.product'. " +
+                    "You may need to configure 'liferay.workspace.app.server.tomcat.version' manually. " +
+                    "Or exclude this task from running (`./gradlew -x ${name} ...`)"
 
             logger.info "[workspace-extra] Checking Tomcat files in '${destDir}'"
 
@@ -102,6 +109,7 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 
 
 // Print the effective versions of various pieces
+// There is no "gradle.liferayWorkspace.modules" (consistently), so use the project property and known default value if not found
 project.afterEvaluate {
     logger.quiet """\
 Final build settings: 
