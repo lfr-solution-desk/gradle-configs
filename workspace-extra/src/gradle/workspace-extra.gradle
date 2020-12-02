@@ -12,9 +12,9 @@ assert supportedGradleVersions.find { gradle.gradleVersion.startsWith(it) },
 
 def pluginVersions = [
         propertiesPlugin:
-                findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.4.6',
+                findProperty('liferay.workspace-extra.plugin.version[net.saliman:gradle-properties-plugin]') ?: '1.5.1',
         downloadTask:
-                findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]]') ?: '4.0.4'
+                findProperty('liferay.workspace-extra.plugin.version[de.undercouch:gradle-download-task]]') ?: '4.1.1'
 ]
 
 // Make sure users can use gradle-local.properties to pass their GitHub auth, same way as they can
