@@ -4,6 +4,16 @@ Various configuration files to be used inside Liferay Workspace Gradle builds of
 
 # Available configs 
 
+## build-variants
+
+Allows development against multiple target platforms (or products) in a single source tree -- without the need to use branching. This is useful if most of your modules can work seemlessly in e.g. DXP 7.2 and DXP 7.3 and    
+
+For details, please check:
+ * the sources in [build-variants/src/gradle](build-variants/src/gradle)
+ * the tests [build-variants/src/gradleTest/latest](build-variants/src/gradleTest/latest)
+
+**Note** This config needs to be applied in `settings.gradle` and *before* the Liferay Workspace plugin is applied. See the example usage in config's [gradleTest/latest](build-variants/src/gradleTest/latest).
+
 ## gpr (GitHub Packages Repository)
 
 Allows modules developed in Liferay Workspace to be published as Maven artifacts and consumed from as dependencies in another Gradle build. GitHub Packages repos hosted together with source code repos are used and the Maven repositories.  
@@ -41,11 +51,18 @@ Configuration is done using project properties, with a dedicated prefix, like `l
 
 ## Usage in projects
 
-In actual project, the configs are served by this GitHub repo directly, using `apply from: 'https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/...` URLs. As a result, the config file has to be self-contained - it cannot assume anything about where it will be physically located once applied. For example, it cannot load any external files by a relative path (or even absolute) path. I can, however, use files from the target Gradle project (where applied), as usual. 
+In actual project, the configs are served by this GitHub repo directly, using:
+```groovy
+apply from: 'https://raw.githubusercontent.com/lfr-solution-desk/gradle-configs/...`
+```
+
+As a result, the config file has to be self-contained - it cannot assume anything about where it will be physically located once applied. For example, it cannot load any external files by a relative path (or even absolute) path. I can, however, use files from the target Gradle project (where applied), as usual. 
 
 The repository has to be public on GitHub. Gradle caches the response as any other remote artifact. For examples of how the configs are used, check our template repos:
  * [https://github.com/lfr-solution-desk/feature-template-repo](https://github.com/lfr-solution-desk/feature-template-repo)
- * [https://github.com/lfr-solution-desk/solution-template-repo](https://github.com/lfr-solution-desk/solution-template-repo) 
+ * [https://github.com/lfr-solution-desk/solution-template-repo](https://github.com/lfr-solution-desk/solution-template-repo)
+ 
+ Most configs are designed to be applied from your `build.gradle` script, but there are also some for `settings.gradle` (e.g. *build-variants*). 
 
 ## Logging 
 
