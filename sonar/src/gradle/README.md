@@ -10,6 +10,8 @@ This config allows your custom modules in Liferay Workspace to be analyzed by So
 2. Check if the mandatory properties' defaults work for you, see [gradle.properties](gradle.properties), and if not, update them in your project's own gradle.properties.
 3. Make sure to pass `-Dsonar.login=...` when invoking `gradlew sonarqube`, passing your Sonar token (secret) to the task.
 
+**Note**: SonarCloud now requires JDK 11 to be used for running the scans (this was introduced around October 2020). So invoking the `sonarqube` task will fail unless executed under JDK 11 (or higher) in Gradle. You can still build your projecct using JDK 8 if necessary, just the Sonar scan needs JDK 11. You'll need to split your CI job into two steps, ocnfiguring different JDK versions as needed. 
+
 ## Supported configuration properties
 
 Please check [gradle.properties](gradle.properties).
