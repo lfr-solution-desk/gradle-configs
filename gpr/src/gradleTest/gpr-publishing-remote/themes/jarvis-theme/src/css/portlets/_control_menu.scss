@@ -1,0 +1,70 @@
+#wrapper {
+	transition: $control-menu-transition-value;
+
+	.control-menu-up.has-control-menu & {
+		margin-top: 0;
+	}
+}
+
+.control-menu {
+	transition: $control-menu-transition-value;
+
+	.control-menu-up & {
+		margin-top: -48px;
+
+		@media (min-width: $screen-sm-min) {
+			margin-top: -64px;
+		}
+	}
+}
+
+.control-menu-level-1 > .container-fluid-1280 {
+	transition: $control-menu-transition-value;
+}
+
+.toggle-control-menu {
+	cursor: pointer;
+	display: none;
+	margin-right: 24px;
+	padding: 12px 0;
+
+	.has-control-menu & {
+		display: inline-block;
+	}
+
+	.fa-angle-down.rotate-180 {
+		display: inline-block;
+
+		.control-menu-up & {
+			display: none;
+		}
+	}
+
+	.fa-angle-down {
+		display: none;
+		height: 24px;
+		width: 24px;
+
+		.control-menu-up & {
+			display: inline-block;
+		}
+	}
+}
+
+.portlet:hover > .portlet-topper,
+.portlet.focus > .portlet-topper {
+	.control-menu-up & {
+		@media (min-width: $screen-sm-min) {
+			opacity: 0;
+		}
+	}
+}
+
+.portlet:hover > .portlet-content-editable,
+.portlet.focus > .portlet-content-editable {
+	.control-menu-up & {
+		@media (min-width: $screen-sm-min) {
+			border-color: transparent;
+		}
+	}
+}

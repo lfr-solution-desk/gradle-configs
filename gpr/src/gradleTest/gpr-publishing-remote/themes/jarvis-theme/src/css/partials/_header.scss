@@ -1,0 +1,266 @@
+.header-wrapper {
+	background: $primary;
+}
+
+.jarvis-home {
+	.header-wrapper {
+		background: linear-gradient(180deg, $primary 0%, $secondary-dark 100%);
+		clip-path: polygon(0 0, 100% 0, 100% 93%, 85% 93%, 50% 100%, 15% 93%, 0 93%);
+		margin-bottom: 25px;
+	}
+
+	.header-user-interaction {
+		margin-left: auto;
+	}
+}
+
+.header {
+	color: $header-navigation-text-color;
+
+	@include flex-wrap(nowrap);
+
+	font-size: $font-size-body;
+	font-weight: 600;
+	height: 48px;
+	padding: 0 $space-l;
+	position: relative;
+	transition: all 0.25s ease;
+	z-index: 10;
+
+	a,
+	button {
+		color: inherit;
+
+		&:hover,
+		&:focus {
+			text-decoration: none;
+		}
+	}
+
+	.container-fluid {
+		padding: 0;
+	}
+
+	.form-group,
+	.lfr-ddm-field-group,
+	.portlet,
+	.portlet-card-no-title.portlet-user-personal-bar,
+	.site-title {
+		margin: 0;
+	}
+
+	.site-title {
+		font-size: 24px;
+
+		.fa-icon {
+			height: 24px;
+			width: 24px;
+		}
+	}
+
+	.jarvis-home:not(.search-results-displayed) & {
+		height: 80vh;
+		min-height: 600px;
+	}
+}
+
+.logo {
+	margin-right: 15px;
+	margin-top: 6px;
+}
+
+.header-search {
+	color: $header-navigation-text-color;
+	margin-right: 12px;
+	padding-top: $space-s;
+
+	.portlet-title-text {
+		display: none;
+	}
+
+	.search-input {
+		border-bottom: 2px solid $default-bg-color;
+		outline: none;
+		width: 100%;
+	}
+
+	.lfr-ddm-field-group {
+		left: 0;
+		position: absolute;
+		top: 0;
+	}
+
+	input {
+		background-color: transparent;
+		padding-left: $space-l;
+	}
+
+	/* ---------- Homepage search bar styles ---------- */
+
+	.jarvis-home:not(.search-results-displayed) & {
+		color: $header-navigation-text-color;
+		left: 50%;
+		max-width: 655px;
+		position: absolute;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: 80%;
+
+		.lexicon-icon-search, .form-control {
+			color: $header-navigation-text-color;
+			display: none;
+		}
+
+		input {
+			background-color: $default-bg-color;
+			border-radius: 5px;
+			border-width: 0 0 1px;
+			box-sizing: border-box;
+			padding-left: $space-default;
+		}
+
+		.search-form,
+		.search-input {
+			color: $default-text-color;
+		}
+	}
+
+	/* ---------- Header search bar styles ---------- */
+
+	.portlet-jarvis-search {
+		.lexicon-icon-search {
+			border-bottom: 2px solid $primary;
+			height: 36px;
+			outline: $primary;
+			padding: 4px 6px 0 6px;
+			width: $space-l;
+
+			.jarvis-home:not(.search-results-displayed) & {
+				margin-top: 5px;
+			}
+		}
+
+		.search-input {
+			border-width: 0 0 2px;
+			box-shadow: none;
+			color: #FFF;
+			font-size: 18px;
+			height: 35px;
+
+			.site:not(.jarvis-home) &:focus {
+				background: $primary-light;
+			}
+
+			&::placeholder {
+				color: #CCC;
+			}
+
+			.jarvis-home:not(.search-results-displayed) & {
+				height: 40px;
+
+				&::placeholder {
+					color: $gray;
+				}
+			}
+		}
+	}
+
+	.search-results-displayed & {
+		display: none;
+	}
+
+	&:not(.jarvis-home) {
+		flex: 1;
+		margin-left: auto;
+		max-width: 600px;
+	}
+}
+
+.header-page-title {
+	display: none;
+	margin-bottom: 38px;
+
+	.jarvis-home:not(.search-results-displayed) & {
+		@include align-items(center);
+		@include display(flex);
+
+		font-family: $font-sans;
+		font-size: 124px;
+		font-weight: 300;
+
+		@include justify-content(center);
+		@include letter-spacing(18px);
+
+		line-height: 1;
+		text-align: center;
+	}
+}
+
+.header-user-interaction {
+	@include display(flex);
+	@include justify-content(flex-end);
+
+	margin-left: 12px;
+
+	.portlet-card.portlet-user-personal-bar {
+		padding-top: $space-s;
+	}
+}
+
+.user-full-name {
+	@include align-self(center);
+
+	display: none;
+	margin-left: 10px;
+}
+
+.user-icon {
+	border-radius: 50%;
+	height: $space-l;
+	line-height: $space-l;
+	margin-top: $space-s;
+	width: $space-l;
+}
+
+/* ---------- Main search autocomplete dropdown style ---------- */
+
+.yui3-widget.yui3-aclist.yui3-widget-positioned > .yui3-aclist-content {
+	border: 0.5px solid $default-text-color;
+	border-radius: 0 0 5px 5px;
+
+	> ul.yui3-aclist-list {
+		color: $default-text-color;
+		padding: 12px 0;
+
+		> li.yui3-aclist-item {
+			padding: 0 $space-default;
+
+			> div {
+				@include align-items(center);
+				@include display(flex);
+
+				height: $space-l;
+
+				@include justify-content(space-between);
+
+				line-height: 1;
+
+				> span {
+					height: 100%;
+					padding: 6px 0;
+				}
+
+				> .search-result-type {
+					font-size: 18px;
+					font-weight: 300;
+				}
+			}
+		}
+	}
+}
+
+.yui3-skin-sam .yui3-aclist-item-hover,
+.yui3-skin-sam .yui3-aclist-item-active {
+	background: #B3D4F4;
+	color: $default-text-color;
+}

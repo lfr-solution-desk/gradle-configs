@@ -1,0 +1,140 @@
+// Custom checkbox for Edit Staff Roles modal
+.j-checkbox {
+	&__label {
+		align-items: center;
+		cursor: pointer;
+		display: inline-flex;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+
+		&:active input {
+			~ .j-checkbox__checkmark {
+				background-color: $gray-light;
+			}
+
+			&:checked ~ .j-checkbox__checkmark {
+				color: $primary-dark;
+			}
+		}
+		& input:checked ~ .j-checkbox__checkmark {
+			background-color: #FFF;
+			color: $primary;
+		}
+
+		&--text {
+			padding-left: $space-s;
+			order: 2;
+		}
+	}
+
+	&__input {
+		cursor: pointer;
+		height: 0;
+		opacity: 0;
+		order: 3;
+		width: 0;
+	}
+
+	&__checkmark {
+		align-items: center;
+		background-color: #FFF;
+		border: 1px solid $primary;
+		border-radius: 2px;
+		color: transparent;
+		display: flex;
+		justify-content: center;
+		height: $space-m;
+		order: 1;
+		width: $space-m;
+
+		.fa-icon {
+			height: $space-m;
+			width: $space-m;
+		}
+	}
+}
+
+// Custom Pill checkbox for Technical Attributes
+.technical-attribute {
+	display: inline-flex;
+	margin-right: $space-m;
+
+	.checkbox {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		padding: 6px 8px;
+		position: relative;
+		width: 100%;
+
+		&:hover {
+			.checkbox-border {
+				@include mdc-elevation(6);
+			}
+
+			input[type="checkbox"]:checked ~ .checkbox-icon {
+				color: $color-danger;
+			}
+		}
+
+		&:active {
+			.checkbox-border {
+				@include mdc-elevation(2);
+			}
+		}
+
+		.checkbox-border {
+			border: 2px solid $color-default-border;
+			border-radius: 50px;
+			bottom: 0;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			transition: mdc-elevation-transition-value();
+			will-change: $mdc-elevation-property;
+		}
+
+		.checkbox-icon {
+			color: #a0a0a0;
+			margin-left: 8px;
+			transition:
+				color 0.2s ease-in-out,
+				transform 0.2s ease-in-out;
+			transform: rotate(45deg);
+		}
+
+		.checkbox-label {
+			color: $gray;
+			margin-left: 4px;
+			z-index: 1;
+		}
+
+		input[type="checkbox"] {
+			cursor: pointer;
+			height: 100%;
+			position: absolute;
+			opacity: 0;
+			width: 100%;
+			z-index: 2;
+
+			&:checked {
+				~ .checkbox-border {
+					background-color: rgba($color-primary-border, 0.3);
+					border-color: $color-primary-border;
+				}
+
+				~ .checkbox-label {
+					color: $color-primary;
+				}
+
+				~ .checkbox-icon {
+					color: $gray;
+					transform: rotate(90deg);
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,117 @@
+/* ---------- Staff Styles when on the far right panel ---------- */
+
+.staff {
+	@include display(flex);
+	@include flex-direction(column);
+	@include justify-content(space-between);
+}
+
+.staff-container {
+	margin: $space-stack-default;
+
+	a > div:nth-child(1) {
+		@include display(flex);
+		@include justify-content(space-between);
+	}
+}
+
+.staff {
+	&-content {
+		@include display(flex);
+	}
+
+	&-details {
+		width: 90%;
+		@include display(flex);
+	}
+
+	&-icon {
+		width: 10%;
+
+		.fa-icon {
+			color: #FFF;
+			margin-right: $space-default;
+			margin-top: 6px;
+		}
+
+		@each $name, $color in $status-icon-map {
+			.fa-#{$name} {
+				color: $color;
+			}
+		}
+	}
+}
+
+.staff-email {
+	font-weight: 300;
+}
+
+.staff-name {
+	font-weight: bold;
+	text-align: left;
+}
+
+.staff-name,
+.staff-role,
+.staff-email {
+	line-height: 36px;
+}
+
+.staff-name,
+.staff-role {
+	font-size: 24px;
+}
+
+.staff-role,
+.staff-email {
+	margin-left: auto;
+	color: #CDCDCD;
+	text-align: right;
+}
+
+/* ---------- Staff Styles when on the far left panel ---------- */
+
+.jarvis-staff.profile {
+	.staff {
+		@include flex-direction(row);
+
+		&-heading {
+			@include display(flex);
+
+			justify-content: space-between;
+			margin: $space-stack-m;
+		}
+
+		&-image {
+			max-height: 80px;
+			max-width: 80px;
+		}
+
+		&-professional-summary {
+			overflow: auto;
+			padding: 0 $space-s 0 0;
+		}
+
+		&-role {
+			font-size: 24px;
+		}
+
+		&-name {
+			line-height: 1.25;
+			margin: 0;
+		}
+
+		&-email,
+		&-name,
+		&-role {
+			margin: $space-stack-s;
+			text-align: left;
+		}
+
+		&-email {
+			color: #B3D4F4;
+			font-size: 18px;
+			text-decoration: underline;
+		}
+	}
+}

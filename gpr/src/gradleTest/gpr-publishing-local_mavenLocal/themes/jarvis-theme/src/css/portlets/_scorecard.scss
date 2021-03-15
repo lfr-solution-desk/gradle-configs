@@ -1,0 +1,89 @@
+// Styles for the Scorecard portlet (both display and edit dialog) on the Scorecard page
+
+.scorecard {
+	.portlet-scorecard {
+		padding: 0 $space-m;
+	}
+
+	.table-cell {
+		padding: $space-m 0;
+		vertical-align: top;
+	}
+
+	.column {
+		&-criteria {
+			width: 45%;
+		}
+
+		&-score {
+			width: 10%;
+		}
+
+		&-comment.last {
+			text-align: left;
+			width: 45%;
+
+			p {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	.unranked {
+		background-color: #DADADA;
+	}
+
+	& .scorecard__helper-text {
+		font-style: italic;
+		font-weight: normal;
+		margin: 0;
+		margin-left: $space-m;
+	}
+}
+
+// Styles for the Edit Scorecard dialog
+
+.portal-popup.scorecard {
+	.scorecard__form {
+		padding: 0 $space-l $space-l;
+
+		.lfr-search-container {
+			margin-top: 0;
+		}
+	}
+
+	table {
+		th, td {
+			padding: $space-m;
+		}
+	}
+
+	.form-group {
+		margin-bottom: 0;
+
+		textarea {
+			height: 34px;
+		}
+	}
+}
+
+// Styles for the Scorecard portlet on the engagement page
+
+.scorecard__profile {
+	.body-container {
+		@include justify-content(center);
+	}
+	&--container {
+		@include align-items(baseline);
+		@include display(flex);
+		@include justify-content(center);
+	}
+
+	&--score-number {
+		font-size: 156px;
+		font-weight: bold;
+	}
+
+	&--score-text {
+	}
+}

@@ -1,0 +1,30 @@
+.label,
+.table-cell.label {
+	background: $default-bg-color;
+	border: 1px solid $gray-lighter;
+	border-radius: 3px;
+	color: $gray;
+	font-size: $font-size-body;
+	font-weight: 600;
+	line-height: 1;
+	margin: 0;
+	padding: $space-xs $space-m;
+	text-align: center;
+	width: 112px;
+}
+
+@each $name, $colors in $color-map {
+	$border-color: nth($colors, 2);
+	$font-color: nth($colors, 1);
+
+	.label.label-#{$name},
+	.tabel-cell.label.label-#{$name} {
+		@include label-color-variant($font-color, $border-color);
+	}
+}
+
+.label.label-fluid-width {
+	margin-bottom: $space-s;
+	margin-right: $space-m;
+	width: auto;
+}

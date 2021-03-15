@@ -1,0 +1,81 @@
+.modal-form-container {
+	padding: 50px 10%;
+
+	.field-wrapper {
+		border: 0.0625rem solid $color-default-border;
+		border-radius: 0.25rem;
+		padding: 8px 2px 2px 8px;
+
+		.control-label {
+			background-color: $default-bg-color;
+			margin-left: 8px;
+			margin-top: -22px;
+			padding: 0 5px;
+			position: absolute;
+		}
+
+		.disabled {
+			background-color: $default-bg-color;
+			border-width: 0;
+		}
+
+		.form-control, .form-control:focus {
+			border-width: 0;
+			box-shadow: unset;
+			padding-right: 5px;
+			padding-top: 0;
+		}
+
+		.form-group {
+			margin-bottom: 0.25rem;
+		}
+
+		.form-validator-stack {
+			border-top: $color-danger-border solid 1px;
+			margin-top: 0px;
+		}
+
+		&.input-box {
+			border-color: $primary;
+			width: 100%;
+
+			.control-label {
+				color: $primary;
+			}
+
+			.form-control {
+				padding-top: 5px;
+			}
+		}
+
+		&.input-text {
+			width: 100%;
+		}
+	}
+}
+
+.modal-form-container .right {
+	float: right;
+}
+
+.modal-form-container .btn-default {
+	background-color: transparent;
+	border-style: none;
+	color: $gray;
+}
+
+.modal-form-container .btn-default:hover {
+	background: $default-bg-color;
+}
+
+.modal-form-container .btn-primary {
+	color: $primary;
+}
+
+.modal-form-container .btn-primary:active {
+	background-color: darken($primary, 20%);
+}
+
+.modal-form-container .btn-primary:hover {
+	background-color: darken($primary, 10%);
+}

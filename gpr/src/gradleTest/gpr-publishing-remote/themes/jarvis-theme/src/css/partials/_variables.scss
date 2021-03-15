@@ -1,0 +1,95 @@
+// COLORS
+$primary: #073767;
+$primary-light: #426095;
+$primary-dark: #00113C;
+$secondary: #355673;
+$secondary-light: #6382A2;
+$secondary-dark: #012D47;
+
+$gray: #808080;
+$gray-light: #A0A0A0;
+$gray-lighter: #C0C0C0;
+$gray-dark: #4A4A4A;
+$gray-darker: #32373A;
+
+$white: #FFF;
+$black: #222;
+
+$brand-primary: $primary;
+
+$default-bg-color: $white;
+$default-text-color: $black;
+$portlet-card-color: $white;
+$header-navigation-text-color: $white;
+$sub-navigation-color: #448CCB;
+
+$color-default: $gray;
+$color-default-border: $gray-lighter;
+$color-secondary: $primary;
+$color-secondary-border: $secondary-light;
+$color-success: #287D3D;
+$color-success-border: #5ACA76;
+$color-primary: #0C7D96;
+$color-primary-border: #89A7E0;
+$color-danger: #DA1414;
+$color-danger-border: #F48989;
+$color-warning: #B95000;
+$color-warning-border: #FF8F39;
+
+$color-map: (
+	danger: ($color-default, $color-default-border),
+	default: ($color-default, $color-default-border),
+	secondary: ($color-secondary, $color-secondary-border),
+	success: ($color-success, $color-success-border),
+	primary: ($color-primary, $color-primary-border),
+	warning: ($color-warning, $color-warning-border)
+);
+
+$panel-1-bg: $primary;
+$panel-2-bg: $secondary;
+$panel-3-bg: $gray-dark;
+$panel-4-bg: $gray-darker;
+$panel-text-color: $white;
+
+// FONTS
+$font-sans: 'Source Sans Pro', 'Helvetica Neue', helvetica, arial, sans-serif;
+$font-size-body: 16px;
+
+// MODULES
+$control-menu-transition-value: all 0.5s ease;
+
+// SPACING
+// Based on EightShapes Space in Design - https://medium.com/eightshapes-llc/space-in-design-systems-188bcbae0d62
+
+// Helper classes.
+$space-default: 16px;
+$space-l: $space-default * 2; // 32px
+$space-m: $space-default; // 16px
+$space-s: $space-default / 2; // 8px
+$space-xl: $space-l * 2; // 64px
+$space-xs: $space-s / 2; // 4px
+
+// Used for creating whitespace within elements. Should normally be assigned to padding.
+$space-inset-default: $space-default $space-default $space-default $space-default; // 16px 16px 16px 16px
+$space-inset-m: $space-default $space-default $space-default $space-default; // 16px 16px 16px 16px
+$space-inset-s: $space-s $space-s $space-s $space-s; // 8px 8px 8px 8px
+$space-inset-l: $space-l $space-l $space-l $space-l; // 32px 32px 32px 32px
+$space-inset-xl: $space-xl $space-xl $space-xl $space-xl; // 64px 64px 64px 64px
+$space-inset-xs: $space-xs $space-xs $space-xs $space-xs; // 4px 4px 4px 4px
+
+// Used for creating vertical space between elements. Should normally be assigned to margin.
+$space-stack-default: 0 0 $space-default 0;
+$space-stack-l: 0 0 $space-l 0;
+$space-stack-m: 0 0 $space-default 0;
+$space-stack-s: 0 0 $space-s 0;
+$space-stack-xl: 0 0 $space-xl 0;
+$space-stack-xs: 0 0 $space-xs 0;
+
+$status-icon-map: (
+	archive: $gray-light,
+	check-circle: $color-success-border,
+	clock: $gray-light,
+	exclamation-circle: $color-warning-border,
+	flag-checkered: #FFF,
+	times-circle: $color-danger,
+);

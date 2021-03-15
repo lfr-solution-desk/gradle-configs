@@ -1,0 +1,48 @@
+.direct-report-group-container {
+
+    margin-bottom: 20px;
+
+    .direct-report-group-header {
+        display: -webkit-box;
+        display: -moz-box;
+        display: box;
+        display: -webkit-flex;
+        display: -moz-flex;
+        display: -ms-flexbox;
+        display: flex;
+    }
+    .direct-report-group-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-right: 16px;
+        text-align: left;
+    }
+    .direct-report-group-edit-icon {
+        color: $primary;
+        width: 10%;
+    }
+
+    .direct-report-group-body {
+        table {
+            border-collapse: collapse;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        tr, td {
+            border: 1px solid $primary;
+            vertical-align: top;
+        }
+
+        .direct-report-manager {
+            background-color: $secondary;
+            color: $white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            text-align: center;
+        }
+    }
+}
