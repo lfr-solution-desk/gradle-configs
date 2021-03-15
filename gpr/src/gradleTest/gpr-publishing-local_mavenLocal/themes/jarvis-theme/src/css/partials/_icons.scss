@@ -1,0 +1,27 @@
+svg:not(:root).fa-icon {
+	overflow: visible;
+}
+
+.fa-icon {
+	display: inline-block;
+	fill: currentColor;
+	font-size: inherit;
+	height: 1.125rem;
+	overflow: visible;
+	vertical-align: middle;
+	width: 1.125rem;
+
+	&.rotate-180 {
+		@include transform(rotate(180deg));
+	}
+
+	&.fa-lg {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	&.fa-sm {
+		height: 0.875rem; // 14px
+		width: 0.875rem; // 14px
+	}
+}

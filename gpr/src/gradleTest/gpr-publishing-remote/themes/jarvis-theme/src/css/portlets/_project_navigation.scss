@@ -1,0 +1,42 @@
+.portlet-project-navigation {
+	margin-left: -15px;
+
+	.lfr-alert-container {
+		min-width: 50vw;
+	}
+
+	.navbar-default,
+	.navbar-default .navbar-nav > li > a,
+	.navbar-default .navbar-nav > .active > a,
+	.navbar-default .navbar-nav > .active > a:hover,
+	.navbar-default .navbar-nav > .active > a:focus {
+		background: transparent;
+		border-width: 0;
+		color: #FFF;
+	}
+
+	.navbar-nav > li.has-context {
+		font-weight: 600;
+	}
+
+	.navbar-default .navbar-nav > li > a:hover,
+	.navbar-default .navbar-nav > li > a:focus,
+	.navbar-default .navbar-nav > .active > a,
+	.navbar-default .navbar-nav > .active > a:hover,
+	.navbar-default .navbar-nav > .active > a:focus {
+		text-decoration: underline;
+	}
+	.navbar-default .navbar-nav > .active > a:after, .navbar-default .navbar-toggle-page-name:after {
+		background-color: transparent;
+	}
+	.nav > li > a {
+		padding-top: 3px;
+	}
+	.nav > li > a,
+	.nav > li > span,
+	.nav-heading > a,
+	.nav-heading > span {
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+}

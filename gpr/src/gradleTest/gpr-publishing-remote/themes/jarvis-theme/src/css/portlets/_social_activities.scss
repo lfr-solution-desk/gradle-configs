@@ -1,0 +1,86 @@
+.custom-social-activities-wrapper {
+	.splitter {
+		background-color: transparent;
+		box-shadow: none;
+		font-size: 20px;
+		font-weight: 600;
+		padding: 0 15px;
+	}
+
+	.card {
+		border-width: 0;
+	}
+
+	.card-row-padded {
+		padding: 10px;
+	}
+
+	.list-group-item {
+		margin-left: 10px;
+	}
+}
+
+.social-activities-see-more {
+	text-align: center;
+}
+
+.social-activities {
+	margin: 32px 0 0 40px;
+
+	.single-activity-wrapper {
+		display: flex;
+		font-weight: 300;
+
+		.activity-description {
+			flex-direction: row;
+			font-weight: 400;
+
+			a {
+				color: #337AB7;
+				font-weight: 600;
+				padding: 0;
+				text-decoration: underline;
+			}
+		}
+
+		.activity-metadata {
+			display: flex;
+			flex-direction: row;
+		}
+
+		.client-url, .date, .project-url {
+			a {
+				color: $black;
+				padding-right: 24px;
+				text-decoration: underline;
+			}
+		}
+
+		.date {
+			font-weight: bold;
+		}
+
+		.user-icon-container {
+			margin-right: $space-m;
+
+			.user-icon {
+				font-size: 24px;
+				height: 56px;
+				line-height: 56px;
+				width: 56px;
+			}
+		}
+	}
+}
+
+.jarvis-home {
+	.social-activities {
+		margin: 0 auto 15px;
+		width: 75%;
+
+		.single-activity-wrapper {
+			margin: 0 auto 32px;
+			width: 75%;
+		}
+	}
+}

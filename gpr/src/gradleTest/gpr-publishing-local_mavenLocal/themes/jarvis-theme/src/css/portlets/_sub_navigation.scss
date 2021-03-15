@@ -1,0 +1,56 @@
+.sub-navigation {
+	background-color: $default-bg-color;
+
+	@include mdc-elevation(4);
+
+	.jarvis-home & {
+		display: none;
+	}
+
+	.portlet-content {
+		border-width: 0;
+	}
+
+	.navbar-default {
+		display: none;
+	}
+
+	.breadcrumbs-horizontal {
+		@include align-items(center);
+
+		color: $default-text-color;
+
+		@include display(flex);
+
+		height: 48px;
+		padding: 0;
+
+		> a {
+			@include display(flex);
+			margin-right: 8px;
+
+			.fa-icon {
+				align-self: center;
+			}
+		}
+
+		.fa-icon {
+			height: 18px;
+			margin: 0 8px;
+			width: 18px;
+
+			&.fa-angle-right {
+				height: 12px;
+				width: 12px;
+			}
+
+			&:nth-child(1) {
+				margin-left: 0;
+			}
+		}
+	}
+
+	.container-fluid.flex-container.header {
+		z-index: 1;
+	}
+}

@@ -1,0 +1,12 @@
+#content {
+	transition: $control-menu-transition-value;
+
+	.jarvis-home:not(.search-results-displayed) & {
+		top: 0;
+	}
+}
+
+#content-inner-wrapper {
+	margin: 0 10px;
+	padding: $space-inset-m;
+}

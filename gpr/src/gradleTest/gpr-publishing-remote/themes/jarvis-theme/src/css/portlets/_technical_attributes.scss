@@ -1,0 +1,22 @@
+.technical-attributes {
+	ul {
+		list-style-type: none;
+		padding: 0;
+	}
+}
+
+.technical-attributes-wrapper {
+	overflow-y: auto;
+
+	h3 {
+		margin: $space-stack-s;
+	}
+}
+
+// Styles for when displayed in the Technical Attributes panel on the Staff Profile page
+
+.jarvis-staff.profile {
+	.technical-attributes .label {
+		margin-right: $space-s;
+	}
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE layout-templates PUBLIC "-//Liferay//DTD Layout Templates 7.0.0//EN" "http://www.liferay.com/dtd/liferay-layout-templates_7_0_0.dtd">
+
+<layout-templates>
+	<custom>
+		<layout-template id="2-2-columns-jarvis-custom" name="2-2 Columns Jarvis Custom">
+			<template-path>/layouttpl/custom/2-2-columns-jarvis-custom-layouttpl/2_2_columns_jarvis_custom.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/2-2-columns-jarvis-custom-layouttpl/2_2_columns_jarvis_custom.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="3-columns-jarvis-custom-50-25-25" name="3 Columns Jarvis Custom (50,25,25)">
+			<template-path>/layouttpl/custom/3-columns-jarvis-custom-50-25-25-layouttpl/3_columns_jarvis_custom_50_25_25.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/3-columns-jarvis-custom-50-25-25-layouttpl/3_columns_jarvis_custom_50_25_25.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="3-2-columns-jarvis-custom-25-25-50" name="3-2 Columns Jarvis Custom (25,25,50)">
+			<template-path>/layouttpl/custom/3-2-columns-jarvis-custom-25-25-50-layouttpl/3_2_columns_jarvis_custom_25_25_50.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/3-2-columns-jarvis-custom-25-25-50-layouttpl/3_2_columns_jarvis_custom_25_25_50.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="3-2-columns-jarvis-custom-25-50-25" name="3-2 Columns Jarvis Custom (25,50,25)">
+			<template-path>/layouttpl/custom/3-2-columns-jarvis-custom-25-50-25-layouttpl/3_2_columns_jarvis_custom_25_50_25.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/3-2-columns-jarvis-custom-25-50-25-layouttpl/3_2_columns_jarvis_custom_25_50_25.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="3-2-columns-jarvis-custom-50-25-25" name="3-2 Columns Jarvis Custom (50,25,25)">
+			<template-path>/layouttpl/custom/3-2-columns-jarvis-custom-50-25-25-layouttpl/3_2_columns_jarvis_custom_50_25_25.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/3-2-columns-jarvis-custom-50-25-25-layouttpl/3_2_columns_jarvis_custom_50_25_25.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="3-2-2-columns-jarvis-custom" name="3-2-2 Columns Jarvis Custom">
+			<template-path>/layouttpl/custom/3-2-2-columns-jarvis-custom-layouttpl/3_2_2_columns_jarvis_custom.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/3-2-2-columns-jarvis-custom-layouttpl/3_2_2_columns_jarvis_custom.png</thumbnail-path>
+		</layout-template>
+		<layout-template id="4-2-columns-jarvis-custom" name="4-2 Columns Jarvis Custom">
+			<template-path>/layouttpl/custom/4-2-columns-jarvis-custom-layouttpl/4_2_columns_jarvis_custom.tpl</template-path>
+			<thumbnail-path>/layouttpl/custom/4-2-columns-jarvis-custom-layouttpl/4_2_columns_jarvis_custom.png</thumbnail-path>
+		</layout-template>
+	</custom>
+</layout-templates>

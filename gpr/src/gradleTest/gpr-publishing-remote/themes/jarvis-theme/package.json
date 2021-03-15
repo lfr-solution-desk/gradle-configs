@@ -1,0 +1,28 @@
+{
+	"name": "@lfr-solution-desk/jarvis-theme",
+	"version": "1.0.0",
+	"main": "package.json",
+	"keywords": [
+		"liferay-theme"
+	],
+	"liferayTheme": {
+		"baseTheme": "styled",
+		"screenshot": "",
+		"rubySass": false,
+		"templateLanguage": "ftl",
+		"version": "7.1"
+	},
+	"devDependencies": {
+		"del": "3.0.0",
+		"gulp": "3.9.1",
+		"gulp-rename": "1.4.0",
+		"gulp-svgmin": "2.1.0",
+		"gulp-svgstore": "7.0.1",
+		"liferay-theme-deps-7.1": "^8.0.0-rc.3",
+		"liferay-theme-tasks": "^8.0.0-rc.3",
+		"run-sequence": "2.2.1"
+	},
+	"publishConfig": {
+		"tag": "7_1_x"
+	}
+}

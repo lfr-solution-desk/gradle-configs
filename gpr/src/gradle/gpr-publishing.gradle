@@ -143,9 +143,10 @@ project.afterEvaluate {
     PublishArtifact npmThemeWarArtifact
 
     if (project.path.startsWith(":themes:") && !project.plugins.hasPlugin(WarPlugin)) {
-        // https://github.com/liferay/liferay-portal/blob/master/modules/sdk/gradle-plugins-workspace/src/main/java/com/liferay/gradle/plugins/workspace/configurators/ThemesProjectConfigurator.java#L236
-        // def warFile = project.file("dist/${project.getConvention().getPlugin(BasePluginConvention).archivesBaseName}.war")
-        def warFile = project.file("dist/${project.name}.war")
+        // use the file as built by the workspace plugin
+        // https://github.com/liferay/liferay-portal/blob/master/modules/sdk/gradle-plugins-workspace/src/main/java/com/liferay/gradle/plugins/workspace/configurators/ThemesProjectConfigurator.java -> ::_getWarFile
+
+        def warFile = project.file("dist/${project.getConvention().getPlugin(BasePluginConvention).archivesBaseName}.war")
         def builtByTask = 'gulpBuild'
 
         // We need to create a custom configuration and add the artifact to it

@@ -41,6 +41,10 @@ task runGradleTest {
         // Should not be published at all -- config not applied on 'form-api-3'
         assert !project.file('modules/forms/form-api-3/build/publications/nebula/pom-default.xml').isFile()
         assert project.file('modules/forms/form-api-3/build/libs/').listFiles().find { it.name.endsWith('.jar') } == null
+
+        // theme with a scope in its "name" (package.json)
+        assert project.file('themes/jarvis-theme/build_gradle/publications/nebula/pom-default.xml').isFile()
+        assert project.file('themes/jarvis-theme/dist/@lfr-solution-desk/jarvis-theme.war').isFile()
     }
 }
 
